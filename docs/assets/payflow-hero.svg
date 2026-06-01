@@ -1,0 +1,70 @@
+<svg width="1280" height="420" viewBox="0 0 1280 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PayFlow fraud intelligence hero banner</title>
+  <desc id="desc">Animated Union Bank inspired fund-flow graph with live fraud operations theme.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#071427"/>
+      <stop offset="0.52" stop-color="#00579C"/>
+      <stop offset="1" stop-color="#121826"/>
+    </linearGradient>
+    <linearGradient id="redLine" x1="170" y1="280" x2="1110" y2="126" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DA251C"/>
+      <stop offset="0.45" stop-color="#F7B731"/>
+      <stop offset="1" stop-color="#23D18B"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .pulse { animation: pulse 2.6s ease-in-out infinite; transform-origin: center; }
+      .pulse2 { animation: pulse 2.6s ease-in-out infinite .7s; transform-origin: center; }
+      .dash { stroke-dasharray: 14 18; animation: dash 11s linear infinite; }
+      .scan { animation: scan 5s ease-in-out infinite; }
+      .fade { animation: fade 3.4s ease-in-out infinite; }
+      @keyframes dash { to { stroke-dashoffset: -320; } }
+      @keyframes pulse { 0%,100% { opacity:.65; transform:scale(1); } 50% { opacity:1; transform:scale(1.12); } }
+      @keyframes scan { 0%,100% { transform:translateX(-80px); opacity:.08; } 50% { transform:translateX(80px); opacity:.2; } }
+      @keyframes fade { 0%,100% { opacity:.35; } 50% { opacity:.9; } }
+    </style>
+  </defs>
+  <rect width="1280" height="420" rx="34" fill="url(#bg)"/>
+  <rect x="32" y="32" width="1216" height="356" rx="26" fill="#06111F" fill-opacity=".42" stroke="#B8D7F3" stroke-opacity=".22"/>
+  <path class="scan" d="M700 56L995 56L870 364H575L700 56Z" fill="white"/>
+  <g opacity=".18">
+    <path d="M126 120H1180" stroke="white"/>
+    <path d="M126 180H1180" stroke="white"/>
+    <path d="M126 240H1180" stroke="white"/>
+    <path d="M126 300H1180" stroke="white"/>
+    <path d="M260 76V344" stroke="white"/>
+    <path d="M455 76V344" stroke="white"/>
+    <path d="M650 76V344" stroke="white"/>
+    <path d="M845 76V344" stroke="white"/>
+    <path d="M1040 76V344" stroke="white"/>
+  </g>
+  <path class="dash" d="M158 282C260 184 342 334 445 226C548 118 650 246 748 184C844 124 942 112 1118 132" stroke="url(#redLine)" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M158 282C260 184 342 334 445 226C548 118 650 246 748 184C844 124 942 112 1118 132" stroke="white" stroke-opacity=".18" stroke-width="18" stroke-linecap="round"/>
+  <g filter="url(#glow)">
+    <circle class="pulse" cx="158" cy="282" r="13" fill="#DA251C"/>
+    <circle class="pulse2" cx="445" cy="226" r="15" fill="#F7B731"/>
+    <circle class="pulse" cx="748" cy="184" r="13" fill="#23D18B"/>
+    <circle class="pulse2" cx="1118" cy="132" r="16" fill="#DA251C"/>
+  </g>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <text x="78" y="104" fill="#FFFFFF" font-size="28" font-weight="800" letter-spacing="4">PAYFLOW</text>
+    <text x="78" y="150" fill="#FFFFFF" font-size="52" font-weight="900">Fund-flow fraud intelligence</text>
+    <text x="80" y="194" fill="#D7E9FF" font-size="24" font-weight="600">Union Bank aligned PS3 proof of concept for iDEA 2.0 Round 2</text>
+    <text x="80" y="248" fill="#F4FAFF" font-size="19">Trace every rupee. Explain every signal. Package every case with evidence.</text>
+    <g class="fade">
+      <rect x="80" y="292" width="168" height="38" rx="19" fill="#DA251C"/>
+      <text x="104" y="317" fill="#FFFFFF" font-size="15" font-weight="800">LIVE GRAPH</text>
+      <rect x="260" y="292" width="190" height="38" rx="19" fill="#00579C"/>
+      <text x="285" y="317" fill="#FFFFFF" font-size="15" font-weight="800">QWEN 3.5 4B</text>
+      <rect x="462" y="292" width="196" height="38" rx="19" fill="#0F9F6E"/>
+      <text x="489" y="317" fill="#FFFFFF" font-size="15" font-weight="800">AIR-GAPPED AI</text>
+    </g>
+  </g>
+</svg>
