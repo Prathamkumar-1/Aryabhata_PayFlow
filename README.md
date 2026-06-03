@@ -296,6 +296,21 @@ PayFlow strengthens the trust layer beneath mass digital adoption. It does not s
 
 ---
 
+## Team
+List team members and their contributions:
+
+* **Sayandeep Haldar** – ML heuristics + Explainable AI integrations
+* **Palash Pangavane** – Data pipeline and synthetic data generation
+* **Pratham Kumar** – Union Bank Style UI and Cross-synchronisation
+* **Yogesh Singh Jeena** – Domain research, PS analysis, documentation
+
+## Contact
+For any queries about this submission:
+* **Team Name**: Aryabhata
+* **Institute**: Indian Institute of Technology Bombay
+* **Email**: sayandeephaldar050405@gmail.com
+* **iDEA 2.0 Phase 2 Submission**
+
 ## License
 
 This proof of concept is released under the MIT License for hackathon evaluation and educational review. Banking production use would require independent security, compliance, model-risk and legal assessment.
