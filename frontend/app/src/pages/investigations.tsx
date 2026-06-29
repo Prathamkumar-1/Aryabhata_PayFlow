@@ -18,6 +18,7 @@ import {
 import { PreFraudIntelBrief } from '@/components/panels/pre-fraud-intel-brief'
 import { EscalationList } from '@/components/investigations/escalation-list'
 import { useRoleAccess } from '@/hooks/use-rbac'
+import { useT } from '@/hooks/use-i18n'
 import {
   useCaseTrace,
   useCreateEvidencePackage,
@@ -119,6 +120,7 @@ function ScenarioGallery({
   canLaunchRole: boolean
   roleLabel: string
 }) {
+  const t = useT()
   const { data, isLoading, isError } = usePS3Scenarios()
   const scenarios = data?.scenarios ?? []
   const canLaunch = scenarios.length > 0 && !isLoading && !isError
@@ -133,7 +135,7 @@ function ScenarioGallery({
         <button
           onClick={onLaunch}
           disabled={launching || !canLaunch || !canLaunchRole}
-          title={!canLaunchRole ? `${roleLabel} cannot launch fund-flow case drills` : 'Launch case drill'}
+          title={!canLaunchRole ? `${roleLabel} cannot launch fund-flow case drills` : t('action.launchCaseDrill.title')}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-md border border-accent-primary/60 px-3 py-1.5',
             'text-[9px] font-bold uppercase tracking-[0.12em] text-accent-primary transition-colors',
@@ -141,7 +143,7 @@ function ScenarioGallery({
           )}
         >
           <Play className="h-3.5 w-3.5" />
-          {launching ? 'Launching' : 'Launch Case Drill'}
+          {launching ? t('action.launchingShort') : t('action.launchCaseDrill')}
         </button>
       </div>
       <div className="grid grid-cols-1 gap-2">
@@ -314,6 +316,7 @@ function EvidencePanel({
   canGenerateRole: boolean
   roleLabel: string
 }) {
+  const t = useT()
   return (
     <section className="rounded-lg border border-border-subtle bg-bg-deep p-3">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -324,7 +327,7 @@ function EvidencePanel({
         <button
           onClick={onGenerate}
           disabled={!caseId || generating || !canGenerateRole}
-          title={!canGenerateRole ? `${roleLabel} cannot generate FIU evidence packages` : 'Generate FIU evidence package'}
+          title={!canGenerateRole ? `${roleLabel} cannot generate FIU evidence packages` : t('action.generateEvidence.title')}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-md border border-[#DA251C]/50 px-2.5 py-1.5',
             'text-[9px] font-bold uppercase tracking-[0.12em] text-[#DA251C] transition-colors',
@@ -332,7 +335,7 @@ function EvidencePanel({
           )}
         >
           <FileText className="h-3.5 w-3.5" />
-          {generating ? 'Generating' : 'Generate'}
+          {generating ? t('action.generating') : t('action.generate')}
         </button>
       </div>
 
@@ -355,7 +358,7 @@ function EvidencePanel({
             className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border-default px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-text-secondary transition-colors hover:border-accent-primary hover:text-accent-primary"
           >
             <Printer className="h-3.5 w-3.5" />
-            Open Printable Package
+            {t('action.openPrintablePackage')}
           </button>
         </div>
       ) : (

@@ -6,33 +6,39 @@ import { useCallback, useEffect, useState } from 'react'
 import { useUIStore } from '@/stores/use-ui-store'
 import { ConnectionStatus } from '@/components/shared/connection-status'
 import { ROLE_POLICIES, canAccessTab, rolePolicy, type PayflowRole } from '@/lib/rbac'
+import { useT, useLanguage } from '@/hooks/use-i18n'
+import { translateRole } from '@/lib/i18n'
+import type { UIStringKey } from '@/lib/translations'
 import { Building2, LockKeyhole, Radio, Search, ShieldCheck, UserRound } from 'lucide-react'
 
-const PRIMARY_NAV = [
-  { tab: 'pre-fraud-intel', label: 'Pre-Fraud Intel' },
-  { tab: 'overview', label: 'Fund-Flow' },
-  { tab: 'threat-sim', label: 'Adaptive Event Lab' },
-  { tab: 'investigations', label: 'Investigator Workbench' },
-  { tab: 'compliance', label: 'FIU Reporting' },
-] as const
+const PRIMARY_NAV: { tab: 'pre-fraud-intel' | 'overview' | 'threat-sim' | 'investigations' | 'compliance'; labelKey: UIStringKey }[] = [
+  { tab: 'pre-fraud-intel', labelKey: 'topbar.nav.preFraudIntel' },
+  { tab: 'overview', labelKey: 'topbar.nav.fundFlow' },
+  { tab: 'threat-sim', labelKey: 'topbar.nav.eventLab' },
+  { tab: 'investigations', labelKey: 'topbar.nav.investigator' },
+  { tab: 'compliance', labelKey: 'topbar.nav.fiuReporting' },
+]
 
 export function TopBar() {
-  const [clock, setClock] = useState(formatClock())
-  const [date, setDate] = useState(formatDate())
+  const t = useT()
+  const language = useLanguage()
+  const locale = language === 'hi' ? 'hi-IN' : 'en-IN'
+  const [clock, setClock] = useState(formatClock(locale))
+  const [date, setDate] = useState(formatDate(locale))
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setClock(formatClock())
-      setDate(formatDate())
+      setClock(formatClock(locale))
+      setDate(formatDate(locale))
     }, 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [locale])
 
   const connected = useUIStore((s) => s.connected)
   const setActiveTab = useUIStore((s) => s.setActiveTab)
   const currentRole = useUIStore((s) => s.currentRole)
   const setCurrentRole = useUIStore((s) => s.setCurrentRole)
-  const activePolicy = rolePolicy(currentRole)
+  const activePolicy = translateRole(rolePolicy(currentRole), language)
   const skipToMain = useCallback(() => {
     const main = document.getElementById('main-content')
     if (main instanceof HTMLElement) {
@@ -49,28 +55,28 @@ export function TopBar() {
             onClick={skipToMain}
             className="font-semibold text-accent-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-accent-primary/30"
           >
-            Skip to main content
+            {t('topbar.skipToMain')}
           </button>
           <span className="h-3 w-px bg-border-subtle" />
-          <span>Backend-synced fraud operations workspace</span>
+          <span>{t('topbar.workspaceStrip')}</span>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/landing" className="rounded-full bg-accent-primary px-3 py-1 font-bold text-white">Landing Page</a>
-          <a href="/docs" className="font-semibold text-accent-primary underline-offset-4 hover:underline">API Docs</a>
+          <a href="/landing" className="rounded-full bg-accent-primary px-3 py-1 font-bold text-white">{t('topbar.landingPage')}</a>
+          <a href="/docs" className="font-semibold text-accent-primary underline-offset-4 hover:underline">{t('topbar.apiDocs')}</a>
         </div>
       </div>
 
       <header className="ubi-official-header flex h-16 shrink-0 items-center justify-between border-b border-border-default px-5">
-        <a href="/landing" title="Union Bank PayFlow portal" target="_self" className="flex min-w-0 items-center gap-3">
+        <a href="/landing" title={t('topbar.brandTitle')} target="_self" className="flex min-w-0 items-center gap-3">
           <span className="ubi-brand-mark shrink-0">
-            <span className="sr-only">Union Bank of India</span>
+            <span className="sr-only">{t('topbar.bankOfIndia')}</span>
           </span>
           <span className="flex min-w-0 flex-col">
             <span className="ubi-wordmark-title truncate text-[16px] leading-tight">
               Union Bank <span>of India</span>
             </span>
             <span className="truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-text-muted leading-tight">
-              A Government of India Undertaking | PayFlow Fraud Intelligence
+              {t('topbar.brandUndertaking')}
             </span>
           </span>
         </a>
@@ -79,17 +85,18 @@ export function TopBar() {
           <div className="ubi-pill-menu flex items-center gap-4 px-5 py-2 text-[11px] font-bold">
             {PRIMARY_NAV.map((item) => {
               const allowed = canAccessTab(currentRole, item.tab)
+              const label = t(item.labelKey)
               return (
                 <button
                   key={item.tab}
                   type="button"
                   onClick={() => setActiveTab(item.tab)}
                   disabled={!allowed}
-                  title={allowed ? item.label : `${activePolicy.label} cannot access ${item.label}`}
+                  title={allowed ? label : `${activePolicy.label} cannot access ${label}`}
                   className="inline-flex items-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   {!allowed && <LockKeyhole className="h-3 w-3" />}
-                  {item.label}
+                  {label}
                 </button>
               )
             })}
@@ -99,12 +106,12 @@ export function TopBar() {
         <div className="flex shrink-0 items-center gap-3">
           <a href="/docs" className="hidden items-center gap-2 rounded-full bg-bg-elevated px-3 py-1.5 text-[10px] font-semibold text-text-secondary lg:flex">
             <Search className="h-3.5 w-3.5" />
-            API Docs
+            {t('topbar.apiDocs')}
           </a>
           <div className="hidden items-center gap-2 md:flex">
             <Building2 className="h-3.5 w-3.5 text-accent-primary" />
             <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-              Good people to bank with
+              {t('topbar.tagline')}
             </span>
           </div>
           <label
@@ -112,7 +119,7 @@ export function TopBar() {
             className="hidden items-center gap-2 rounded-full border border-border-subtle bg-bg-elevated px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-text-secondary xl:flex"
           >
             <UserRound className="h-3.5 w-3.5 text-accent-primary" />
-            <span className="sr-only">Union Bank role</span>
+            <span className="sr-only">{t('topbar.roleSrOnly')}</span>
             <select
               value={currentRole}
               onChange={(event) => setCurrentRole(event.target.value as PayflowRole)}
@@ -120,7 +127,7 @@ export function TopBar() {
             >
               {Object.values(ROLE_POLICIES).map((policy) => (
                 <option key={policy.role} value={policy.role}>
-                  {policy.label}
+                  {translateRole(policy, language).label}
                 </option>
               ))}
             </select>
@@ -146,8 +153,8 @@ export function TopBar() {
   )
 }
 
-function formatClock(): string {
-  return new Date().toLocaleTimeString('en-IN', {
+function formatClock(locale: string): string {
+  return new Date().toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
@@ -155,8 +162,8 @@ function formatClock(): string {
   })
 }
 
-function formatDate(): string {
-  return new Date().toLocaleDateString('en-IN', {
+function formatDate(locale: string): string {
+  return new Date().toLocaleDateString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

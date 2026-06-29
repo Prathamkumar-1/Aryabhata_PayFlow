@@ -357,10 +357,11 @@ class ToolExecutor:
                 features, names = cached
                 indices = np.argsort(np.abs(features))[::-1][:top_k]
                 ranked = {names[i]: round(float(features[i]), 4) for i in indices}
-                domain_cached = getattr(self._feature_engine, "_domain_feature_cache", {}).get(txn_id)
+                domain_cache = getattr(self._feature_engine, "_domain_feature_cache", {})
+                domain_cached = domain_cache.get(txn_id) if isinstance(domain_cache, dict) else None
                 domain_features = {}
                 domain_controls = []
-                if domain_cached is not None:
+                if isinstance(domain_cached, tuple) and len(domain_cached) == 2:
                     domain_features, domain_controls = domain_cached
                 return {
                     "txn_id": txn_id,

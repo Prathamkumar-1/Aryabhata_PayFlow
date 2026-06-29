@@ -11,6 +11,7 @@ import {
   storeRole,
   type PayflowRole,
 } from '@/lib/rbac'
+import { getStoredLanguage, storeLanguage, type Language } from '@/lib/i18n'
 
 export type TabId =
   | 'overview'
@@ -34,6 +35,7 @@ export const TAB_IDS: TabId[] = [
 ]
 
 const initialRole = getStoredRole()
+const initialLanguage = getStoredLanguage()
 
 function getInitialActiveTab(): TabId {
   if (typeof window === 'undefined') return defaultTabForRole(initialRole) as TabId
@@ -45,6 +47,7 @@ function getInitialActiveTab(): TabId {
 interface UIState {
   activeTab: TabId
   currentRole: PayflowRole
+  language: Language
   sidebarCollapsed: boolean
   expandedDrawers: Set<string>
   connected: boolean
@@ -56,6 +59,7 @@ interface UIState {
   // Actions
   setActiveTab: (tab: TabId) => void
   setCurrentRole: (role: PayflowRole) => void
+  setLanguage: (language: Language) => void
   toggleSidebar: () => void
   toggleDrawer: (id: string) => void
   setConnected: (connected: boolean) => void
@@ -68,6 +72,7 @@ interface UIState {
 export const useUIStore = create<UIState>((set) => ({
   activeTab: getInitialActiveTab(),
   currentRole: initialRole,
+  language: initialLanguage,
   sidebarCollapsed: false,
   expandedDrawers: new Set<string>(),
   connected: false,
@@ -92,6 +97,12 @@ export const useUIStore = create<UIState>((set) => ({
           ? state.activeTab
           : defaultTabForRole(role)) as TabId,
       }
+    }),
+
+  setLanguage: (language) =>
+    set(() => {
+      storeLanguage(language)
+      return { language }
     }),
 
   toggleSidebar: () =>

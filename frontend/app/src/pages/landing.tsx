@@ -27,49 +27,52 @@ import {
   type PayflowRole,
   type Permission,
 } from '@/lib/rbac'
+import { useI18n } from '@/hooks/use-i18n'
+import { LANGUAGES } from '@/lib/i18n'
+import type { UIStringKey } from '@/lib/translations'
 import { cn } from '@/lib/utils'
 
-const SERVICE_NAV = [
-  'EFRMS Monitoring',
-  'Cyber Cell',
-  'Branch Review',
-  'FIU Reporting',
-  'CFR Registry',
-  'Digital Banking',
-  'RBI Returns',
-  'Case Evidence',
-] as const
+const SERVICE_NAV: UIStringKey[] = [
+  'landing.service.efrms',
+  'landing.service.cyberCell',
+  'landing.service.branch',
+  'landing.service.fiu',
+  'landing.service.cfr',
+  'landing.service.digital',
+  'landing.service.rbi',
+  'landing.service.caseEvidence',
+]
 
-const ONLINE_SERVICES = [
-  { label: 'SOC Queue', body: 'Live EFRMS alerts, device risk, velocity bursts', role: 'soc_analyst' as PayflowRole },
-  { label: 'Cyber IR', body: 'Phishing, malware, endpoint containment', role: 'soc_l2_incident_responder' as PayflowRole },
-  { label: 'Fund-Flow Case', body: 'Mule chain, layering, round-tripping drill', role: 'fraud_analyst' as PayflowRole },
-  { label: 'Payments Desk', body: 'Hold, hotlist, beneficiary, customer exposure', role: 'transaction_officer' as PayflowRole },
-  { label: 'EFRMS Rules', body: 'Scenario tuning, threshold drift, false positives', role: 'efrms_specialist' as PayflowRole },
-  { label: 'AML Mule Network', body: 'CDD, structuring, STR draft and watchlists', role: 'aml_analyst' as PayflowRole },
-  { label: 'FIU Package', body: 'STR/CTR/FMR evidence and audit hashes', role: 'compliance_officer' as PayflowRole },
-  { label: 'Committee Gate', body: 'Freeze, countermeasure and policy approvals', role: 'fraud_committee' as PayflowRole },
-] as const
+const ONLINE_SERVICES: { labelKey: UIStringKey; bodyKey: UIStringKey; role: PayflowRole }[] = [
+  { labelKey: 'landing.online.socQueue.label', bodyKey: 'landing.online.socQueue.body', role: 'soc_analyst' },
+  { labelKey: 'landing.online.cyberIr.label', bodyKey: 'landing.online.cyberIr.body', role: 'soc_l2_incident_responder' },
+  { labelKey: 'landing.online.fundFlowCase.label', bodyKey: 'landing.online.fundFlowCase.body', role: 'fraud_analyst' },
+  { labelKey: 'landing.online.paymentsDesk.label', bodyKey: 'landing.online.paymentsDesk.body', role: 'transaction_officer' },
+  { labelKey: 'landing.online.efrmsRules.label', bodyKey: 'landing.online.efrmsRules.body', role: 'efrms_specialist' },
+  { labelKey: 'landing.online.amlMule.label', bodyKey: 'landing.online.amlMule.body', role: 'aml_analyst' },
+  { labelKey: 'landing.online.fiuPackage.label', bodyKey: 'landing.online.fiuPackage.body', role: 'compliance_officer' },
+  { labelKey: 'landing.online.committeeGate.label', bodyKey: 'landing.online.committeeGate.body', role: 'fraud_committee' },
+]
 
-const ACTION_MATRIX: { label: string; permission: Permission; tab: string }[] = [
-  { label: 'Refresh Intel', permission: 'intel:write', tab: 'pre-fraud-intel' },
-  { label: 'Launch Case', permission: 'case:launch', tab: 'investigations' },
-  { label: 'Payment Hold', permission: 'alert:hold', tab: 'investigations' },
-  { label: 'Card Hotlist', permission: 'card:hotlist', tab: 'investigations' },
-  { label: 'Approve Freeze', permission: 'countermeasure:decide', tab: 'threat-sim' },
-  { label: 'SOC Isolation', permission: 'soc:isolate', tab: 'system' },
-  { label: 'AML Draft', permission: 'aml:str:draft', tab: 'compliance' },
-  { label: 'FIU/RBI Filing', permission: 'regulatory:file', tab: 'compliance' },
-  { label: 'Toggle Rule', permission: 'rules:toggle', tab: 'compliance' },
-  { label: 'Audit Review', permission: 'audit:review', tab: 'compliance' },
-] as const
+const ACTION_MATRIX: { labelKey: UIStringKey; permission: Permission; tab: string }[] = [
+  { labelKey: 'landing.action.refreshIntel', permission: 'intel:write', tab: 'pre-fraud-intel' },
+  { labelKey: 'landing.action.launchCase', permission: 'case:launch', tab: 'investigations' },
+  { labelKey: 'landing.action.paymentHold', permission: 'alert:hold', tab: 'investigations' },
+  { labelKey: 'landing.action.cardHotlist', permission: 'card:hotlist', tab: 'investigations' },
+  { labelKey: 'landing.action.approveFreeze', permission: 'countermeasure:decide', tab: 'threat-sim' },
+  { labelKey: 'landing.action.socIsolation', permission: 'soc:isolate', tab: 'system' },
+  { labelKey: 'landing.action.amlDraft', permission: 'aml:str:draft', tab: 'compliance' },
+  { labelKey: 'landing.action.fiuFiling', permission: 'regulatory:file', tab: 'compliance' },
+  { labelKey: 'landing.action.toggleRule', permission: 'rules:toggle', tab: 'compliance' },
+  { labelKey: 'landing.action.auditReview', permission: 'audit:review', tab: 'compliance' },
+]
 
-const STAGE_TILES = [
-  ['01', 'EFRMS + SOC', 'Alerts, devices, sessions, IOCs'],
-  ['02', 'FRM + Payments', 'Cases, holds, hotlists, graph review'],
-  ['03', 'AML + FIU', 'CDD, STR, CTR, FMR, CFR, DAKSH'],
-  ['04', 'Audit + Risk', 'Evidence hash, approvals, model feedback'],
-] as const
+const STAGE_TILES: { num: string; titleKey: UIStringKey; bodyKey: UIStringKey }[] = [
+  { num: '01', titleKey: 'landing.stage.efrms.title', bodyKey: 'landing.stage.efrms.body' },
+  { num: '02', titleKey: 'landing.stage.frm.title', bodyKey: 'landing.stage.frm.body' },
+  { num: '03', titleKey: 'landing.stage.aml.title', bodyKey: 'landing.stage.aml.body' },
+  { num: '04', titleKey: 'landing.stage.audit.title', bodyKey: 'landing.stage.audit.body' },
+]
 
 function openApp(role: PayflowRole, tab = 'pre-fraud-intel') {
   storeRole(role)
@@ -83,8 +86,18 @@ function roleCan(role: PayflowRole, permission: Permission) {
 
 export function LandingPage() {
   const [selectedRole, setSelectedRole] = useState<PayflowRole>('fraud_analyst')
-  const selectedPolicy = ROLE_POLICIES[selectedRole]
-  const roleRows = useMemo(() => ROLE_ORDER.map((role) => ROLE_POLICIES[role]), [])
+  const { language, setLanguage, t, tr, tw } = useI18n()
+  const selectedPolicy = tr(ROLE_POLICIES[selectedRole])
+  const roleRows = useMemo(
+    () => ROLE_ORDER.map((role) => tr(ROLE_POLICIES[role])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [language],
+  )
+  const workflows = useMemo(
+    () => OPERATIONAL_WORKFLOWS.map((wf) => tw(wf)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [language],
+  )
   const allowedActions = ACTION_MATRIX.filter((item) => roleCan(selectedRole, item.permission)).length
 
   return (
@@ -94,21 +107,37 @@ export function LandingPage() {
       <div className="border-b border-[#d9e2ef] bg-[#f8fbff] text-[12px] font-semibold text-[#24364f]">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-2">
           <div className="flex flex-wrap items-center gap-4">
-            <a className="font-bold text-[#00579C]" href="#main-content">Skip to main content</a>
+            <a className="font-bold text-[#00579C]" href="#main-content">{t('landing.skipToMain')}</a>
             <span className="h-4 w-px bg-[#d9e2ef]" />
-            <span>Screen reader</span>
+            <span>{t('landing.screenReader')}</span>
             <span>A-</span>
             <span>A</span>
             <span>A+</span>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <span>Contact Us</span>
+            <span>{t('landing.contactUs')}</span>
             <a className="rounded-full bg-[#00579C] px-4 py-1.5 font-extrabold text-white" href="/app">
-              PayFlow Portal
+              {t('landing.portal')}
             </a>
-            <a className="font-bold text-[#00579C]" href="/api/v1/rbac/roles">RBAC API</a>
-            <span>English</span>
-            <span>हिंदी</span>
+            <a className="font-bold text-[#00579C]" href="/api/v1/rbac/roles">{t('landing.rbacApi')}</a>
+            <div className="flex items-center gap-1 rounded-full border border-[#d9e2ef] bg-white p-0.5">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.id}
+                  type="button"
+                  onClick={() => setLanguage(lang.id)}
+                  aria-pressed={language === lang.id}
+                  className={cn(
+                    'rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors',
+                    language === lang.id
+                      ? 'bg-[#00579C] text-white'
+                      : 'text-[#00579C] hover:bg-[#dff2ff]',
+                  )}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -122,21 +151,21 @@ export function LandingPage() {
                 Union Bank <span className="text-[#00579C]">of India</span>
               </div>
               <div className="mt-1 text-[12px] font-bold uppercase tracking-[0.2em] text-[#617189]">
-                A Government of India Undertaking | PayFlow Fraud Intelligence
+                {t('landing.govtUndertaking')}
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button className="inline-flex h-10 items-center gap-2 rounded-full border border-[#d7e3f1] bg-[#f4f8fc] px-4 text-[12px] font-bold text-[#24364f]">
               <Search className="h-4 w-4 text-[#00579C]" />
-              Looking for something specific?
+              {t('landing.searchPlaceholder')}
             </button>
             <button
               type="button"
               onClick={() => openApp(selectedRole)}
               className="inline-flex h-11 items-center gap-2 rounded-md bg-[#00579C] px-5 text-[12px] font-extrabold uppercase tracking-[0.13em] text-white shadow-[0_8px_18px_rgba(0,87,156,0.26)] transition-colors hover:bg-[#00477f]"
             >
-              Internet Banking Style Login
+              {t('landing.loginCta')}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -145,13 +174,13 @@ export function LandingPage() {
 
       <nav className="bg-[#00579C] text-white shadow-[0_8px_20px_rgba(0,87,156,0.18)]">
         <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-5">
-          {SERVICE_NAV.map((item) => (
+          {SERVICE_NAV.map((key) => (
             <button
-              key={item}
+              key={key}
               type="button"
               className="shrink-0 border-r border-white/15 px-4 py-3 text-[12px] font-extrabold uppercase tracking-[0.08em] hover:bg-white/12"
             >
-              {item}
+              {t(key)}
             </button>
           ))}
         </div>
@@ -165,11 +194,11 @@ export function LandingPage() {
         <div className="relative mx-auto grid max-w-7xl gap-0 px-5 py-10 xl:min-h-[calc(100vh-190px)] xl:grid-cols-[310px_minmax(0,1fr)_380px]">
           <aside className="border border-white/20 bg-white shadow-[0_16px_36px_rgba(0,23,52,0.22)]">
             <div className="bg-[#DA251C] px-4 py-3 text-[12px] font-extrabold uppercase tracking-[0.14em] text-white">
-              Online Services
+              {t('landing.onlineServices')}
             </div>
             {ONLINE_SERVICES.map((item) => (
               <button
-                key={item.label}
+                key={item.labelKey}
                 type="button"
                 onClick={() => setSelectedRole(item.role)}
                 className={cn(
@@ -179,8 +208,8 @@ export function LandingPage() {
               >
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#00579C]" />
                 <span>
-                  <span className="block text-[13px] font-extrabold">{item.label}</span>
-                  <span className="mt-1 block text-[11px] leading-5 text-[#617189]">{item.body}</span>
+                  <span className="block text-[13px] font-extrabold">{t(item.labelKey)}</span>
+                  <span className="mt-1 block text-[11px] leading-5 text-[#617189]">{t(item.bodyKey)}</span>
                 </span>
               </button>
             ))}
@@ -189,7 +218,7 @@ export function LandingPage() {
               onClick={() => openApp(selectedRole)}
               className="m-4 inline-flex h-10 w-[calc(100%-2rem)] items-center justify-center gap-2 rounded-md bg-[#00579C] text-[11px] font-extrabold uppercase tracking-[0.12em] text-white"
             >
-              Open Service
+              {t('landing.openService')}
               <ChevronRight className="h-4 w-4" />
             </button>
           </aside>
@@ -197,30 +226,29 @@ export function LandingPage() {
           <div className="min-w-0 bg-[#004b86] px-7 py-8 text-white xl:min-h-[500px]">
             <div className="mb-4 inline-flex items-center gap-2 rounded-sm bg-white px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#DA251C]">
               <Landmark className="h-4 w-4" />
-              Fraud Operations Command Portal
+              {t('landing.commandPortal')}
             </div>
             <h1 className="max-w-3xl text-5xl font-black leading-[1.04] tracking-normal text-white">
-              PayFlow for Union Bank fraud, cyber, FIU and branch teams.
+              {t('landing.heroHeadline')}
             </h1>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-white/86">
-              A Union Bank-style operations entry point for EFRMS, SOC, digital payments, AML, FIU reporting, fraud
-              investigation, model governance, risk oversight and audit control review.
+              {t('landing.heroSubtitle')}
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-4">
-              {STAGE_TILES.map(([num, title, body]) => (
-                <div key={title} className="border border-white/18 bg-white/10 p-3 shadow-sm">
-                  <div className="font-mono text-[11px] font-extrabold text-white">{num}</div>
-                  <div className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-white">{title}</div>
-                  <div className="mt-1 text-[10px] leading-4 text-white/72">{body}</div>
+              {STAGE_TILES.map((tile) => (
+                <div key={tile.titleKey} className="border border-white/18 bg-white/10 p-3 shadow-sm">
+                  <div className="font-mono text-[11px] font-extrabold text-white">{tile.num}</div>
+                  <div className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-white">{t(tile.titleKey)}</div>
+                  <div className="mt-1 text-[10px] leading-4 text-white/72">{t(tile.bodyKey)}</div>
                 </div>
               ))}
             </div>
 
             <div className="mt-6 grid gap-2 border border-white/18 bg-white/10 p-3 lg:grid-cols-3">
-              <HeroControl label="role header" value={`X-Payflow-Role: ${selectedRole}`} />
-              <HeroControl label="tabs available" value={`${selectedPolicy.tabs.length}/8`} />
-              <HeroControl label="actions enabled" value={`${allowedActions}/${ACTION_MATRIX.length}`} />
+              <HeroControl label={t('landing.control.roleHeader')} value={`X-Payflow-Role: ${selectedRole}`} />
+              <HeroControl label={t('landing.control.tabs')} value={`${selectedPolicy.tabs.length}/8`} />
+              <HeroControl label={t('landing.control.actions')} value={`${allowedActions}/${ACTION_MATRIX.length}`} />
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
@@ -230,7 +258,7 @@ export function LandingPage() {
                 className="inline-flex h-11 items-center gap-2 rounded-md border-2 border-white bg-white px-4 text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#00579C]"
               >
                 <Building2 className="h-4 w-4" />
-                Open Fund-Flow Overview
+                {t('landing.openOverview')}
               </button>
               <button
                 type="button"
@@ -238,7 +266,7 @@ export function LandingPage() {
                 className="inline-flex h-11 items-center gap-2 rounded-md bg-[#DA251C] px-4 text-[12px] font-extrabold uppercase tracking-[0.12em] text-white shadow-[0_10px_22px_rgba(117,16,10,0.3)]"
               >
                 <ShieldAlert className="h-4 w-4" />
-                Test RBAC In Event Lab
+                {t('landing.testRbac')}
               </button>
             </div>
           </div>
@@ -246,21 +274,21 @@ export function LandingPage() {
           <aside className="bg-[#003f75] p-5 text-white shadow-[0_16px_36px_rgba(0,23,52,0.22)]">
             <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/20 pb-3">
               <div>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/75">Selected Role</div>
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/75">{t('landing.selectedRole')}</div>
                 <div className="mt-1 text-xl font-extrabold">{selectedPolicy.label}</div>
               </div>
               <KeyRound className="h-8 w-8 text-white/85" />
             </div>
             <div className="space-y-3">
-              <InfoMetric label="Domain" value={selectedPolicy.domain} />
-              <InfoMetric label="Tabs Open" value={`${selectedPolicy.tabs.length}/8`} />
-              <InfoMetric label="Write Actions" value={`${allowedActions}/${ACTION_MATRIX.length}`} />
-              <InfoMetric label="Shift / Queue" value={selectedPolicy.shift} />
-              <InfoMetric label="Reports To" value={selectedPolicy.reportingLine} />
+              <InfoMetric label={t('landing.infoMetric.domain')} value={selectedPolicy.domain} />
+              <InfoMetric label={t('landing.infoMetric.tabs')} value={`${selectedPolicy.tabs.length}/8`} />
+              <InfoMetric label={t('landing.infoMetric.actions')} value={`${allowedActions}/${ACTION_MATRIX.length}`} />
+              <InfoMetric label={t('landing.infoMetric.shift')} value={selectedPolicy.shift} />
+              <InfoMetric label={t('landing.infoMetric.reportsTo')} value={selectedPolicy.reportingLine} />
             </div>
             <p className="mt-4 text-[12px] leading-6 text-white/82">{selectedPolicy.escalationScope}</p>
             <div className="mt-4 border border-white/18 bg-white/10 p-3">
-              <div className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-white/65">tool stack</div>
+              <div className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-white/65">{t('landing.toolStack')}</div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {selectedPolicy.toolStack.slice(0, 5).map((tool) => (
                   <span key={tool} className="rounded-sm bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#00579C]">
@@ -274,7 +302,7 @@ export function LandingPage() {
                 const allowed = roleCan(selectedRole, item.permission)
                 return (
                   <button
-                    key={item.label}
+                    key={item.labelKey}
                     type="button"
                     onClick={() => allowed && openApp(selectedRole, item.tab)}
                     disabled={!allowed}
@@ -286,7 +314,7 @@ export function LandingPage() {
                     )}
                   >
                     {allowed ? <CheckCircle2 className="h-4 w-4 shrink-0 text-[#00579C]" /> : <LockKeyhole className="h-4 w-4 shrink-0" />}
-                    {item.label}
+                    {t(item.labelKey)}
                   </button>
                 )
               })}
@@ -297,10 +325,10 @@ export function LandingPage() {
 
       <section className="border-y border-[#d7e3f1] bg-[#f4f8fc]">
         <div className="mx-auto grid max-w-7xl gap-4 px-5 py-5 lg:grid-cols-[1fr_1fr_1fr_1fr]">
-          <PortalBlock icon={Wifi} title="Digital Banking Services" value="UPI / IMPS / Cards / Net Banking" />
-          <PortalBlock icon={BellRing} title="EFRMS / SOC Watch" value="Velocity, MFA, device, malware, phishing" />
-          <PortalBlock icon={FileCheck2} title="RBI / FIU Workbench" value="STR, CTR, FMR, CFR and audit trail" />
-          <PortalBlock icon={Radio} title="Live Backend" value="SSE + role header + permission guards" />
+          <PortalBlock icon={Wifi} title={t('landing.portal.digital.title')} value={t('landing.portal.digital.value')} />
+          <PortalBlock icon={BellRing} title={t('landing.portal.efrms.title')} value={t('landing.portal.efrms.value')} />
+          <PortalBlock icon={FileCheck2} title={t('landing.portal.rbi.title')} value={t('landing.portal.rbi.value')} />
+          <PortalBlock icon={Radio} title={t('landing.portal.backend.title')} value={t('landing.portal.backend.value')} />
         </div>
       </section>
 
@@ -310,17 +338,17 @@ export function LandingPage() {
             <div>
               <div className="inline-flex items-center gap-2 bg-[#DA251C] px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white">
                 <ClipboardCheck className="h-4 w-4" />
-                Indian bank fraud operating model
+                {t('landing.authority.badge')}
               </div>
-              <h2 className="mt-3 text-2xl font-black text-[#111827]">Operational workflow authority matrix</h2>
+              <h2 className="mt-3 text-2xl font-black text-[#111827]">{t('landing.authority.heading')}</h2>
             </div>
             <div className="rounded-md bg-[#00579C] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.13em] text-white">
-              {ROLE_ORDER.length} bank roles wired
+              {ROLE_ORDER.length} {t('landing.authority.rolesWired')}
             </div>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            {OPERATIONAL_WORKFLOWS.map((workflow) => (
+            {workflows.map((workflow) => (
               <article key={workflow.id} className="border border-[#d7e3f1] bg-[#f7fbff] shadow-sm">
                 <div className="border-b border-[#d7e3f1] bg-white px-4 py-3">
                   <div className="text-[15px] font-black text-[#111827]">{workflow.title}</div>
@@ -328,7 +356,7 @@ export function LandingPage() {
                 </div>
                 <div className="divide-y divide-[#d7e3f1]">
                   {workflow.stages.map((stage, index) => {
-                    const owner = ROLE_POLICIES[stage.owner]
+                    const owner = tr(ROLE_POLICIES[stage.owner])
                     const active = stage.owner === selectedRole
                     return (
                       <button
@@ -364,14 +392,14 @@ export function LandingPage() {
       <section className="mx-auto max-w-7xl px-5 py-7">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-black text-[#111827]">Choose Prototype Role</h2>
+            <h2 className="text-2xl font-black text-[#111827]">{t('landing.rolePicker.heading')}</h2>
             <p className="mt-1 text-[13px] text-[#4b5d76]">
-              Role authority spans tab access, write controls, backend permission checks, case actions, evidence packages and reporting gates.
+              {t('landing.rolePicker.body')}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-md bg-[#00579C] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white">
             <Radio className="h-4 w-4" />
-            Live local console
+            {t('landing.rolePicker.liveConsole')}
           </div>
         </div>
 
@@ -397,15 +425,15 @@ export function LandingPage() {
                   </div>
                   <p className="mt-3 min-h-12 text-[12px] leading-6 text-[#4b5d76]">{policy.summary}</p>
                   <div className="mt-3 border-l-4 border-[#DA251C] bg-[#f7fbff] px-3 py-2">
-                    <div className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-[#617189]">authority</div>
+                    <div className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-[#617189]">{t('landing.rolePicker.authority')}</div>
                     <div className="mt-1 line-clamp-2 text-[11px] font-semibold leading-5 text-[#24364f]">
                       {policy.decisionAuthority}
                     </div>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2">
-                    <RoleStat label="tabs" value={`${policy.tabs.length}/8`} />
-                    <RoleStat label="actions" value={`${allowed}/${ACTION_MATRIX.length}`} />
-                    <RoleStat label="perms" value={String(policy.permissions.length)} />
+                    <RoleStat label={t('landing.rolePicker.statTabs')} value={`${policy.tabs.length}/8`} />
+                    <RoleStat label={t('landing.rolePicker.statActions')} value={`${allowed}/${ACTION_MATRIX.length}`} />
+                    <RoleStat label={t('landing.rolePicker.statPerms')} value={String(policy.permissions.length)} />
                   </div>
                 </button>
                 <div className="flex border-t border-[#d7e3f1]">
@@ -414,14 +442,14 @@ export function LandingPage() {
                     onClick={() => setSelectedRole(policy.role)}
                     className="flex-1 px-3 py-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#00579C] hover:bg-[#dff2ff]"
                   >
-                    Preview Access
+                    {t('landing.rolePicker.previewAccess')}
                   </button>
                   <button
                     type="button"
                     onClick={() => openApp(policy.role)}
                     className="flex-1 bg-[#00579C] px-3 py-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-[#00477f]"
                   >
-                    Launch as Role
+                    {t('landing.rolePicker.launchAsRole')}
                   </button>
                 </div>
               </article>

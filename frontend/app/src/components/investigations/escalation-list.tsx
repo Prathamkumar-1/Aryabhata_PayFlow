@@ -5,6 +5,7 @@
 import { UserCheck, AlertCircle, Loader2, CheckCircle2, XCircle, ArrowUpRight } from 'lucide-react'
 import { useDecideEscalation, useEscalations } from '@/hooks/use-api'
 import { useRoleAccess } from '@/hooks/use-rbac'
+import { useT } from '@/hooks/use-i18n'
 import { SeverityBadge } from '@/components/shared/severity-badge'
 import { cn, fmtOptionalTimestamp, truncId } from '@/lib/utils'
 import type { Escalation } from '@/lib/types'
@@ -42,6 +43,7 @@ function evidenceLine(esc: Escalation) {
 
 export function EscalationList() {
   const access = useRoleAccess()
+  const t = useT()
   const { data: escalations, isLoading } = useEscalations()
   const decide = useDecideEscalation()
   const pendingAck = decide.variables?.ackId
@@ -141,32 +143,32 @@ export function EscalationList() {
                     <button
                       type="button"
                       disabled={decide.isPending || !canDecide}
-                      title={!canDecide ? `${access.policy.label} cannot approve escalations` : 'Approve escalation'}
+                      title={!canDecide ? `${access.policy.label} cannot approve escalations` : t('action.approveEscalation.title')}
                       onClick={() => void decide.mutateAsync({ ackId: esc.ack_id, decision: 'approve', reason: 'analyst_approved_after_evidence_review' })}
                       className="inline-flex items-center justify-center gap-1 rounded-md border border-alert-low/30 bg-alert-low/10 px-2 py-1.5 text-[8px] font-bold uppercase tracking-wide text-alert-low disabled:opacity-40"
                     >
                       {pendingAck === esc.ack_id && decide.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
-                      Approve
+                      {t('action.approve')}
                     </button>
                     <button
                       type="button"
                       disabled={decide.isPending || !canDecide}
-                      title={!canDecide ? `${access.policy.label} cannot reject escalations` : 'Reject escalation'}
+                      title={!canDecide ? `${access.policy.label} cannot reject escalations` : t('action.rejectEscalation.title')}
                       onClick={() => void decide.mutateAsync({ ackId: esc.ack_id, decision: 'reject', reason: 'analyst_rejected_insufficient_evidence' })}
                       className="inline-flex items-center justify-center gap-1 rounded-md border border-border-subtle bg-bg-surface px-2 py-1.5 text-[8px] font-bold uppercase tracking-wide text-text-secondary disabled:opacity-40"
                     >
                       <XCircle className="h-3 w-3" />
-                      Reject
+                      {t('action.reject')}
                     </button>
                     <button
                       type="button"
                       disabled={decide.isPending || !canDecide}
-                      title={!canDecide ? `${access.policy.label} cannot escalate cases to FIU` : 'Escalate to FIU queue'}
+                      title={!canDecide ? `${access.policy.label} cannot escalate cases to FIU` : t('action.escalateFiu.title')}
                       onClick={() => void decide.mutateAsync({ ackId: esc.ack_id, decision: 'escalate', reason: 'analyst_escalated_to_fiu_queue' })}
                       className="inline-flex items-center justify-center gap-1 rounded-md border border-alert-escalated/30 bg-alert-escalated/10 px-2 py-1.5 text-[8px] font-bold uppercase tracking-wide text-alert-escalated disabled:opacity-40"
                     >
                       <ArrowUpRight className="h-3 w-3" />
-                      FIU
+                      {t('action.fiu')}
                     </button>
                   </div>
                 )}

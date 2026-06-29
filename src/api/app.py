@@ -197,42 +197,48 @@ def create_app(orchestrator=None) -> FastAPI:
             "acceptable_installed": [],
             "reachable": False,
         }
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            tags = await client.get(f"{ollama_url}/api/tags")
-            tags.raise_for_status()
-            status["reachable"] = True
-            installed = [
-                row.get("model") or row.get("name")
-                for row in tags.json().get("models", [])
-                if isinstance(row, dict) and (row.get("model") or row.get("name"))
-            ]
-            status["installed_models"] = installed
-            status["target_installed"] = any(
-                name == target_model or name.startswith(target_model)
-                for name in installed
-            )
-            status["acceptable_installed"] = [
-                name for name in installed if family_ok(name)
-            ]
-
-            try:
-                ps = await client.get(f"{ollama_url}/api/ps")
-                ps.raise_for_status()
-                running = [
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                tags = await client.get(f"{ollama_url}/api/tags")
+                tags.raise_for_status()
+                status["reachable"] = True
+                installed = [
                     row.get("model") or row.get("name")
-                    for row in ps.json().get("models", [])
+                    for row in tags.json().get("models", [])
                     if isinstance(row, dict) and (row.get("model") or row.get("name"))
                 ]
-                status["running_models"] = running
-                status["target_running"] = any(
+                status["installed_models"] = installed
+                status["target_installed"] = any(
                     name == target_model or name.startswith(target_model)
-                    for name in running
+                    for name in installed
                 )
-                status["acceptable_running"] = [
-                    name for name in running if family_ok(name)
+                status["acceptable_installed"] = [
+                    name for name in installed if family_ok(name)
                 ]
-            except Exception:
-                pass
+
+                try:
+                    ps = await client.get(f"{ollama_url}/api/ps")
+                    ps.raise_for_status()
+                    running = [
+                        row.get("model") or row.get("name")
+                        for row in ps.json().get("models", [])
+                        if isinstance(row, dict) and (row.get("model") or row.get("name"))
+                    ]
+                    status["running_models"] = running
+                    status["target_running"] = any(
+                        name == target_model or name.startswith(target_model)
+                        for name in running
+                    )
+                    status["acceptable_running"] = [
+                        name for name in running if family_ok(name)
+                    ]
+                except Exception:
+                    pass
+        except Exception as exc:
+            # Ollama is optional. If it is unreachable, return the structured
+            # status payload with ``reachable: False`` so the UI can render the
+            # "status unavailable" state instead of an HTTP 500.
+            logger.debug("Ollama unreachable at %s: %s", ollama_url, exc)
 
         return status
 

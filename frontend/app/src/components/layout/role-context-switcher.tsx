@@ -1,19 +1,22 @@
 import { Building2, CheckCircle2, ChevronDown, ChevronUp, KeyRound, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
 import { canAccessTab, rolePolicy } from '@/lib/rbac'
 import { TAB_IDS, useUIStore, type TabId } from '@/stores/use-ui-store'
+import { useT } from '@/hooks/use-i18n'
+import { translateRole } from '@/lib/i18n'
+import type { UIStringKey } from '@/lib/translations'
 import { cn } from '@/lib/utils'
 
 export type RoleContextPanel = 'closed' | 'access' | 'reality'
 
-const TAB_LABELS: Record<TabId, string> = {
-  overview: 'Fund-Flow Overview',
-  'threat-sim': 'Adaptive Event Lab',
-  investigations: 'Investigations',
-  'pre-fraud-intel': 'Pre-Fraud Intel',
-  intelligence: 'Intelligence',
-  analytics: 'Analytics',
-  compliance: 'Compliance',
-  system: 'System',
+const TAB_LABEL_KEYS: Record<TabId, UIStringKey> = {
+  overview: 'nav.tab.overview.full',
+  'threat-sim': 'nav.tab.threatSim.full',
+  investigations: 'nav.tab.investigations.full',
+  'pre-fraud-intel': 'nav.tab.preFraudIntel.full',
+  intelligence: 'nav.tab.intelligence.full',
+  analytics: 'nav.tab.analytics.full',
+  compliance: 'nav.tab.compliance.full',
+  system: 'nav.tab.system.full',
 }
 
 interface Props {
@@ -24,7 +27,9 @@ interface Props {
 export function RoleContextSwitcher({ panel, onPanelChange }: Props) {
   const currentRole = useUIStore((s) => s.currentRole)
   const activeTab = useUIStore((s) => s.activeTab)
-  const policy = rolePolicy(currentRole)
+  const language = useUIStore((s) => s.language)
+  const t = useT()
+  const policy = translateRole(rolePolicy(currentRole), language)
   const deniedTabs = TAB_IDS.filter((tab) => !canAccessTab(currentRole, tab))
   const activeTabAllowed = canAccessTab(currentRole, activeTab)
 
@@ -49,7 +54,7 @@ export function RoleContextSwitcher({ panel, onPanelChange }: Props) {
                 )}
               >
                 {activeTabAllowed ? <CheckCircle2 className="h-3 w-3" /> : <LockKeyhole className="h-3 w-3" />}
-                {TAB_LABELS[activeTab]}
+                {t(TAB_LABEL_KEYS[activeTab])}
               </span>
               <span className="hidden font-mono text-[9px] font-bold text-[#617189] md:inline">
                 X-Payflow-Role: {currentRole}
@@ -62,8 +67,8 @@ export function RoleContextSwitcher({ panel, onPanelChange }: Props) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <RolePill icon={ShieldCheck} label="open tabs" value={`${TAB_IDS.length - deniedTabs.length}/${TAB_IDS.length}`} />
-          <RolePill icon={LockKeyhole} label="locked" value={String(deniedTabs.length)} tone={deniedTabs.length ? 'red' : 'blue'} />
+          <RolePill icon={ShieldCheck} label={t('roleSwitcher.openTabs')} value={`${TAB_IDS.length - deniedTabs.length}/${TAB_IDS.length}`} />
+          <RolePill icon={LockKeyhole} label={t('roleSwitcher.locked')} value={String(deniedTabs.length)} tone={deniedTabs.length ? 'red' : 'blue'} />
           <button
             type="button"
             onClick={() => togglePanel('access')}
@@ -75,7 +80,7 @@ export function RoleContextSwitcher({ panel, onPanelChange }: Props) {
             )}
           >
             <KeyRound className="h-3.5 w-3.5" />
-            Role Matrix
+            {t('roleSwitcher.roleMatrix')}
             {panel === 'access' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
           <button
@@ -89,7 +94,7 @@ export function RoleContextSwitcher({ panel, onPanelChange }: Props) {
             )}
           >
             <Building2 className="h-3.5 w-3.5" />
-            Bank Reality
+            {t('roleSwitcher.bankReality')}
             {panel === 'reality' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
         </div>

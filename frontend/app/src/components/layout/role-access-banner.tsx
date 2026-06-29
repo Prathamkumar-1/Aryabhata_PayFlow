@@ -16,6 +16,7 @@ import {
   type Permission,
 } from '@/lib/rbac'
 import { useUIStore, TAB_IDS } from '@/stores/use-ui-store'
+import { translateRole } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { TabId } from '@/stores/use-ui-store'
 
@@ -49,7 +50,8 @@ export function RoleAccessBanner() {
   const currentRole = useUIStore((s) => s.currentRole)
   const setCurrentRole = useUIStore((s) => s.setCurrentRole)
   const activeTab = useUIStore((s) => s.activeTab)
-  const policy = ROLE_POLICIES[currentRole]
+  const language = useUIStore((s) => s.language)
+  const policy = translateRole(ROLE_POLICIES[currentRole], language)
   const deniedTabs = TAB_IDS.filter((tab) => !canAccessTab(currentRole, tab))
   const allowedTabs = TAB_IDS.filter((tab) => canAccessTab(currentRole, tab))
   const deniedTabLabels = deniedTabs.map((tab) => TAB_LABELS[tab])
@@ -104,7 +106,7 @@ export function RoleAccessBanner() {
 
           <div className="flex max-h-[74px] flex-wrap items-center gap-1.5 overflow-y-auto pr-1">
             {ROLE_ORDER.map((role) => {
-              const item = ROLE_POLICIES[role]
+              const item = translateRole(ROLE_POLICIES[role], language)
               const active = role === currentRole
               return (
                 <button

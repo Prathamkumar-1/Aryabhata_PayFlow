@@ -31,6 +31,7 @@ import {
   useRejectCountermeasure,
 } from '@/hooks/use-api'
 import { useRoleAccess } from '@/hooks/use-rbac'
+import { useT } from '@/hooks/use-i18n'
 import {
   useActivityStore,
   type BackendTerminalEntry,
@@ -420,6 +421,7 @@ function ProposalRow({
   canReject: boolean
   roleLabel: string
 }) {
+  const t = useT()
   const [nowSec, setNowSec] = useState(0)
   const executable = proposal.execution_allowed && proposal.status === 'proposed'
 
@@ -492,22 +494,22 @@ function ProposalRow({
             title={
               !canApprove
                 ? `${roleLabel} cannot approve executable countermeasures`
-                : proposal.execution_allowed ? 'Approve countermeasure' : 'Advisory-only proposal cannot execute'
+                : proposal.execution_allowed ? t('action.approveCountermeasure.title') : t('action.advisoryOnly.title')
             }
             className="inline-flex h-8 items-center gap-1 rounded-md border border-alert-low/30 bg-alert-low/10 px-2 text-[9px] font-bold uppercase tracking-[0.1em] text-alert-low disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
-            Approve
+            {t('action.approve')}
           </button>
           <button
             type="button"
             onClick={() => onReject(proposal.proposal_id)}
             disabled={proposal.status !== 'proposed' || busy || !canReject}
-            title={!canReject ? `${roleLabel} cannot reject countermeasure proposals` : 'Reject countermeasure'}
+            title={!canReject ? `${roleLabel} cannot reject countermeasure proposals` : t('action.rejectCountermeasure.title')}
             className="inline-flex h-8 items-center gap-1 rounded-md border border-border-default bg-bg-surface px-2 text-[9px] font-bold uppercase tracking-[0.1em] text-text-secondary disabled:cursor-not-allowed disabled:opacity-40"
           >
             <XCircle className="h-3 w-3" />
-            Reject
+            {t('action.reject')}
           </button>
         </div>
       </div>
@@ -778,6 +780,7 @@ function LiveBackendRunTerminal({
 
 export function AdaptiveEventLab() {
   const access = useRoleAccess()
+  const t = useT()
   const { data: templatesData, isLoading } = useEventLabTemplates()
   const { data: llmStatus, isLoading: llmStatusLoading, isError: llmStatusError } = useLLMStatus()
   const preview = usePreviewEventLabRun()
@@ -965,21 +968,21 @@ export function AdaptiveEventLab() {
                   className="inline-flex h-9 items-center gap-2 rounded-md border border-accent-primary/35 bg-bg-surface px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-primary hover:bg-accent-muted disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {preview.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
-                  Preview Chain
+                  {t('action.previewChain')}
                 </button>
                 <button
                   type="button"
                   onClick={() => void handleLaunch()}
                   disabled={!selected || launch.isPending || !access.can('simulation:write')}
-                  title={!access.can('simulation:write') ? `${access.policy.label} cannot launch Event Lab runs` : 'Launch Event Lab run'}
+                  title={!access.can('simulation:write') ? `${access.policy.label} cannot launch Event Lab runs` : t('action.launchIntoPipeline.title')}
                   className="inline-flex h-9 items-center gap-2 rounded-md bg-accent-primary px-4 text-[10px] font-bold uppercase tracking-[0.12em] text-white shadow-sm hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {launch.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-                  Launch Into Pipeline
+                  {t('action.launchIntoPipeline')}
                 </button>
                 <div className="ml-auto flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-text-muted">
                   <ShieldCheck className="h-3.5 w-3.5 text-alert-low" />
-                  analyst approval required
+                  {t('action.analystApprovalRequired')}
                 </div>
               </div>
 

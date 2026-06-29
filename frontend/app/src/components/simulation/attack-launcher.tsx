@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { useAttackTypes, useLaunchAttack } from '@/hooks/use-api'
 import { useRoleAccess } from '@/hooks/use-rbac'
+import { useT } from '@/hooks/use-i18n'
 import { cn } from '@/lib/utils'
 import {
   Network,
@@ -45,6 +46,7 @@ function AttackCard({
   index: number
 }) {
   const access = useRoleAccess()
+  const t = useT()
   const launch = useLaunchAttack()
   const [isLaunching, setIsLaunching] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -138,7 +140,7 @@ function AttackCard({
         <button
           onClick={() => void handleLaunch()}
           disabled={isLaunching || launch.isPending || !access.can('simulation:write')}
-          title={!access.can('simulation:write') ? `${access.policy.label} cannot launch attack simulations` : 'Launch attack simulation'}
+          title={!access.can('simulation:write') ? `${access.policy.label} cannot launch attack simulations` : t('action.launchAttack.title')}
           className={cn(
             'group relative w-full py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-200',
             'border border-accent-primary/70 text-accent-primary',
@@ -151,7 +153,7 @@ function AttackCard({
               'w-3 h-3 transition-transform duration-200',
               !isLaunching && 'group-hover:rotate-90',
             )} />
-            {isLaunching ? 'Launching...' : 'Launch Attack'}
+            {isLaunching ? t('action.launching') : t('action.launchAttack')}
           </span>
         </button>
       </div>
