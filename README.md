@@ -171,7 +171,8 @@ If the exact tag is unavailable in your Ollama registry, use the closest Qwen 3.
 ### Backend Setup
 
 ```powershell
-cd C:\Users\sayan\Downloads\Aryabhata\Pay_Flow
+# Navigate to the PayFlow project root directory
+cd path\to\Aryabhata_PayFlow
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -187,7 +188,7 @@ The backend exposes the API at `http://127.0.0.1:8000`. The OpenAPI documentatio
 ### Frontend Setup
 
 ```powershell
-cd C:\Users\sayan\Downloads\Aryabhata\Pay_Flow\frontend\app
+cd frontend\app
 npm install
 npm run dev -- --host 127.0.0.1 --port 3006
 ```

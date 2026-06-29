@@ -79,3 +79,10 @@ checkpoints/
 frontend/app/node_modules/
 frontend/app/dist/
 frontend/app/.vite/
+
+# Debug / scratch files
+port_check.txt
+proc_check.txt
+temp_ps.txt
+sklearn_ver.txt
+*.tmp
