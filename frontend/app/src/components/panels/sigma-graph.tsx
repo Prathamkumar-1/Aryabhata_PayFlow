@@ -25,42 +25,44 @@ import {
 const MAX_NODES = 78
 const MAX_GRAPH_EDGES = 150
 const GRAPH_SYNC_MS = 1_500
-const NODE_COLOR_SAFE = '#00579C'
-const GRAPH_DIMMED_COLOR = '#b8c7db'
+const NODE_COLOR_SAFE = '#3d8fd6'
+const GRAPH_DIMMED_COLOR = '#8a9bb8'
 const RISK_COLORS: Record<string, string> = {
-  CRIT: '#DA251C',
-  CRITICAL: '#DA251C',
-  HIGH: '#B51A13',
-  MED: '#f5b400',
-  MEDIUM: '#f5b400',
-  ELEVATED: '#f5b400',
-  LOW: '#00579C',
+  CRIT: '#ff5757',
+  CRITICAL: '#ff5757',
+  HIGH: '#ff7a3d',
+  MED: '#ffd166',
+  MEDIUM: '#ffd166',
+  ELEVATED: '#ffd166',
+  LOW: '#2bd97e',
 }
 
 // Degree-based color gradient for safe nodes using Union Bank blues and neutrals.
+// Brightened so nodes stay legible on the dark command-center canvas while
+// remaining acceptable on the light institutional theme.
 const SAFE_DEGREE_COLORS: Record<string, string> = {
-  hub: '#00579C',
-  active: '#2f79b5',
-  normal: '#617189',
-  leaf: '#b8c7db',
+  hub: '#3d8fd6',
+  active: '#5ba6e0',
+  normal: '#7d8ba8',
+  leaf: '#8a9bb8',
 }
 
 const FRAUD_TYPE_COLORS: Record<number, string> = {
-  0: '#00579C', 1: '#DA251C', 2: '#B51A13', 3: '#00579C',
-  4: '#617189', 5: '#DA251C', 6: '#f5b400', 7: '#DA251C', 8: '#2f79b5',
+  0: '#3d8fd6', 1: '#ff5757', 2: '#ff7a3d', 3: '#3d8fd6',
+  4: '#7d8ba8', 5: '#ff5757', 6: '#ffd166', 7: '#ff5757', 8: '#5ba6e0',
 }
 
 // Status-based node color overrides
 const STATUS_NODE_COLORS: Record<string, string> = {
-  frozen: '#DA251C',
-  suspicious: '#f5b400',
-  paused: '#00579C',
+  frozen: '#ff5757',
+  suspicious: '#ffd166',
+  paused: '#3d8fd6',
 }
 const STATUS_BORDER_COLORS: Record<string, string> = {
-  frozen: '#DA251C', suspicious: '#f5b400', paused: '#00579C', normal: '#617189',
+  frozen: '#ff5757', suspicious: '#ffd166', paused: '#3d8fd6', normal: '#7d8ba8',
 }
 const COMMUNITY_COLORS = [
-  '#DA251C', '#00579C', '#B51A13', '#2f79b5', '#f5b400', '#617189', '#8a98aa', '#003f75',
+  '#ff5757', '#3d8fd6', '#ff7a3d', '#5ba6e0', '#ffd166', '#7d8ba8', '#9aa8c0', '#2f6f9e',
 ]
 
 const CHANNEL_LABELS: Record<number, string> = {
@@ -68,8 +70,16 @@ const CHANNEL_LABELS: Record<number, string> = {
   5: 'RTGS', 6: 'NEFT', 7: 'IMPS', 8: 'SWIFT', 9: 'POS',
 }
 const CHANNEL_COLORS: Record<number, string> = {
-  0: '#617189', 1: '#f5b400', 2: '#00579C', 3: '#2f79b5', 4: '#DA251C',
-  5: '#B51A13', 6: '#003f75', 7: '#00579C', 8: '#DA251C', 9: '#617189',
+  0: '#7d8ba8', 1: '#ffd166', 2: '#3d8fd6', 3: '#5ba6e0', 4: '#ff5757',
+  5: '#ff7a3d', 6: '#2f6f9e', 7: '#3d8fd6', 8: '#ff5757', 9: '#7d8ba8',
+}
+
+// Parse a #rrggbb hex into RGB components for canvas rgba() construction.
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!m) return null
+  const n = parseInt(m[1], 16)
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
 }
 
 // Pre-index edges by node for O(N+E) lookups instead of O(N*E)
@@ -625,6 +635,12 @@ function ActivitySparkline() {
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
       ctx.clearRect(0, 0, W, H)
       if (_activityHistory.length < 2) return
+      // Resolve the accent color from the active theme token so the sparkline
+      // tracks the light/dark palette instead of hardcoding a brand hex.
+      const accent = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-accent-primary')
+        .trim() || '#3d8fd6'
+      const rgb = hexToRgb(accent) ?? { r: 61, g: 143, b: 214 }
       const max = Math.max(..._activityHistory, 1)
       const step = W / (_activityHistory.length - 1)
       ctx.beginPath()
@@ -633,14 +649,14 @@ function ActivitySparkline() {
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
       })
-      ctx.strokeStyle = '#00579C'; ctx.lineWidth = 1.5; ctx.stroke()
+      ctx.strokeStyle = accent; ctx.lineWidth = 1.5; ctx.stroke()
       const last = _activityHistory.length - 1
       ctx.lineTo(last * step, H); ctx.lineTo(0, H); ctx.closePath()
       const grad = ctx.createLinearGradient(0, 0, 0, H)
-      grad.addColorStop(0, 'rgba(0,87,156,0.3)'); grad.addColorStop(1, 'rgba(0,87,156,0)')
+      grad.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},0.3)`); grad.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},0)`)
       ctx.fillStyle = grad; ctx.fill()
       const lx = last * step, ly = H - (_activityHistory[last] / max) * (H - 2)
-      ctx.beginPath(); ctx.arc(lx, ly, 2, 0, Math.PI * 2); ctx.fillStyle = '#00579C'; ctx.fill()
+      ctx.beginPath(); ctx.arc(lx, ly, 2, 0, Math.PI * 2); ctx.fillStyle = accent; ctx.fill()
     }, 2000)
     return () => clearInterval(iv)
   }, [])
@@ -690,74 +706,74 @@ function InGraphNodeDetailPanel({
   const fmtVol = (v: number) => v >= 1e7 ? `₹${(v / 1e7).toFixed(1)}Cr` : v >= 1e5 ? `₹${(v / 1e5).toFixed(1)}L` : `₹${(v / 100).toLocaleString()}`
 
   return (
-    <div className="absolute top-3 right-3 z-30 w-72 bg-white/95 border border-[#d7e3f1] rounded-xl shadow-2xl backdrop-blur-sm animate-[slide-in-right_0.3s_ease-out] overflow-hidden">
-      <div className="px-4 py-3 border-b border-[#d7e3f1] flex items-center justify-between">
+    <div className="absolute top-3 right-3 z-30 w-72 bg-bg-surface/95 border border-border-subtle rounded-xl shadow-2xl backdrop-blur-sm animate-[slide-in-right_0.3s_ease-out] overflow-hidden">
+      <div className="px-4 py-3 border-b border-border-subtle flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full" style={{ background: attrs.color as string }} />
-          <span className="text-sm font-mono text-[#24364f] font-semibold truncate max-w-[160px]">{nodeId}</span>
+          <span className="text-sm font-mono text-text-primary font-semibold truncate max-w-[160px]">{nodeId}</span>
         </div>
-        <button onClick={onClose} className="text-[#617189] hover:text-[#24364f] text-lg leading-none">&times;</button>
+        <button onClick={onClose} className="text-text-muted hover:text-text-primary text-lg leading-none">&times;</button>
       </div>
       <div className="px-4 py-3 space-y-3 max-h-[400px] overflow-y-auto text-[11px]">
         {/* Risk Level */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[#4b5d76]">Risk Level</span>
+            <span className="text-text-secondary">Risk Level</span>
             <span className="font-bold px-2 py-0.5 rounded-full text-[10px]" style={{ background: riskColor + '22', color: riskColor, border: `1px solid ${riskColor}44` }}>{riskLevel}</span>
           </div>
-          <div className="w-full h-2 bg-[#d7e3f1] rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-border-subtle rounded-full overflow-hidden">
             <div className="h-full rounded-full" style={{ width: `${fraudRatio * 100}%`, background: `linear-gradient(90deg, ${riskColor}88, ${riskColor})` }} />
           </div>
         </div>
         {/* Centrality */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-[#f4f8fc] rounded-lg px-2 py-1.5">
-            <div className="text-[#617189] text-[9px]">PageRank</div>
-            <div className="text-[#00579C] font-mono font-semibold">{pr.toFixed(4)}</div>
+          <div className="bg-bg-elevated rounded-lg px-2 py-1.5">
+            <div className="text-text-muted text-[9px]">PageRank</div>
+            <div className="text-accent-primary font-mono font-semibold">{pr.toFixed(4)}</div>
           </div>
-          <div className="bg-[#f4f8fc] rounded-lg px-2 py-1.5">
-            <div className="text-[#617189] text-[9px]">Betweenness</div>
-            <div className="text-[#00579C] font-mono font-semibold">{bc.toFixed(4)}</div>
+          <div className="bg-bg-elevated rounded-lg px-2 py-1.5">
+            <div className="text-text-muted text-[9px]">Betweenness</div>
+            <div className="text-accent-primary font-mono font-semibold">{bc.toFixed(4)}</div>
           </div>
-          <div className="bg-[#f4f8fc] rounded-lg px-2 py-1.5">
-            <div className="text-[#617189] text-[9px]">Connections</div>
-            <div className="text-[#24364f] font-mono font-semibold">{nodeEdges.length}</div>
+          <div className="bg-bg-elevated rounded-lg px-2 py-1.5">
+            <div className="text-text-muted text-[9px]">Connections</div>
+            <div className="text-text-primary font-mono font-semibold">{nodeEdges.length}</div>
           </div>
-          <div className="bg-[#f4f8fc] rounded-lg px-2 py-1.5">
-            <div className="text-[#617189] text-[9px]">Volume</div>
-            <div className="text-[#0f9f6e] font-mono font-semibold">{fmtVol(totalAmount)}</div>
+          <div className="bg-bg-elevated rounded-lg px-2 py-1.5">
+            <div className="text-text-muted text-[9px]">Volume</div>
+            <div className="text-alert-low font-mono font-semibold">{fmtVol(totalAmount)}</div>
           </div>
         </div>
         {/* Flow Direction */}
         <div>
-          <div className="text-[#617189] text-[9px] mb-1">Flow Direction</div>
+          <div className="text-text-muted text-[9px] mb-1">Flow Direction</div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[#00579C] w-10">IN</span>
-              <div className="flex-1 h-1.5 bg-[#d7e3f1] rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${(inflowAmt / maxFlow) * 100}%`, background: '#00579C' }} />
+              <span className="text-accent-primary w-10">IN</span>
+              <div className="flex-1 h-1.5 bg-border-subtle rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${(inflowAmt / maxFlow) * 100}%`, background: 'var(--color-accent-primary)' }} />
               </div>
-              <span className="text-[#4b5d76] text-[9px] w-16 text-right">{fmtVol(inflowAmt)}</span>
+              <span className="text-text-secondary text-[9px] w-16 text-right">{fmtVol(inflowAmt)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[#DA251C] w-10">OUT</span>
-              <div className="flex-1 h-1.5 bg-[#d7e3f1] rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${(outflowAmt / maxFlow) * 100}%`, background: '#DA251C' }} />
+              <span className="text-alert-critical w-10">OUT</span>
+              <div className="flex-1 h-1.5 bg-border-subtle rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${(outflowAmt / maxFlow) * 100}%`, background: 'var(--color-alert-critical)' }} />
               </div>
-              <span className="text-[#4b5d76] text-[9px] w-16 text-right">{fmtVol(outflowAmt)}</span>
+              <span className="text-text-secondary text-[9px] w-16 text-right">{fmtVol(outflowAmt)}</span>
             </div>
           </div>
         </div>
         {/* Fraud Breakdown */}
         {fraudBreakdown.size > 0 && (
           <div>
-            <div className="text-[#617189] text-[9px] mb-1">Fraud Breakdown</div>
+            <div className="text-text-muted text-[9px] mb-1">Fraud Breakdown</div>
             <div className="space-y-1">
               {[...fraudBreakdown.entries()].map(([fl, count]) => (
                 <div key={fl} className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: FRAUD_TYPE_COLORS[fl] }} />
-                  <span className="text-[#24364f] flex-1">{FRAUD_PATTERN_LABELS[fl] ?? `Type ${fl}`}</span>
-                  <span className="text-[#4b5d76]">{count}</span>
+                  <span className="text-text-primary flex-1">{FRAUD_PATTERN_LABELS[fl] ?? `Type ${fl}`}</span>
+                  <span className="text-text-secondary">{count}</span>
                 </div>
               ))}
             </div>
@@ -766,7 +782,7 @@ function InGraphNodeDetailPanel({
         {/* Channels */}
         {channels.size > 0 && (
           <div>
-            <div className="text-[#617189] text-[9px] mb-1">Channels</div>
+            <div className="text-text-muted text-[9px] mb-1">Channels</div>
             <div className="flex flex-wrap gap-1">
               {[...channels.entries()].sort((a, b) => b[1] - a[1]).map(([ch, count]) => (
                 <span key={ch} className="px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1" style={{ background: (CHANNEL_COLORS[ch] ?? '#94a3b8') + '22', color: CHANNEL_COLORS[ch] ?? '#94a3b8', border: `1px solid ${(CHANNEL_COLORS[ch] ?? '#94a3b8')}33` }}>
@@ -787,10 +803,10 @@ function InGraphNodeDetailPanel({
 // ============================================================================
 function VfxToggle({ label, enabled, onChange }: { label: string; enabled: boolean; onChange: () => void }) {
   return (
-    <button onClick={onChange} className="flex items-center justify-between w-full px-2 py-1 rounded hover:bg-[#f4f8fc] transition-colors text-[10px]">
-      <span className="text-[#24364f]">{label}</span>
+    <button onClick={onChange} className="flex items-center justify-between w-full px-2 py-1 rounded hover:bg-bg-elevated transition-colors text-[10px]">
+      <span className="text-text-primary">{label}</span>
       <div className="flex items-center gap-1.5">
-        <div className={`w-7 h-4 rounded-full transition-colors duration-200 relative ${enabled ? 'bg-[#00579C]' : 'bg-[#b8c7db]'}`}>
+        <div className={`w-7 h-4 rounded-full transition-colors duration-200 relative ${enabled ? 'bg-accent-primary' : 'bg-border-default'}`}>
           <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${enabled ? 'left-3.5' : 'left-0.5'}`} />
         </div>
       </div>
@@ -897,10 +913,10 @@ function Graph3DControls({
   return (
     <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5">
       {/* Filter row */}
-      <div className="flex items-center gap-1 bg-white/95 border border-[#d7e3f1] rounded-lg px-1.5 py-1 shadow-lg backdrop-blur-sm">
+      <div className="flex items-center gap-1 bg-bg-surface/95 border border-border-subtle rounded-lg px-1.5 py-1 shadow-lg backdrop-blur-sm">
         {filterButtons.map(fb => (
           <button key={fb.key} onClick={() => { if (fb.key === 'cycles') onCycles(); if (fb.key === 'mule') onMules(); if (fb.key === 'layering') onLayering(); setFilter(fb.key) }}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${filter === fb.key ? 'bg-[#00579C]/15 text-[#00579C] shadow-sm' : 'text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc]'}`}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${filter === fb.key ? 'bg-accent-primary/15 text-accent-primary shadow-sm' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'}`}
             title={fb.label}>
             {fb.icon}
             <span className="hidden sm:inline">{fb.label}</span>
@@ -908,49 +924,49 @@ function Graph3DControls({
         ))}
       </div>
       {/* Tool row */}
-      <div className="flex items-center gap-1 bg-white/95 border border-[#d7e3f1] rounded-lg px-1.5 py-1 shadow-lg backdrop-blur-sm">
-        <button onClick={() => zoom(1)} className="p-1.5 text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc] rounded transition-colors" title="Zoom in"><ZoomIn size={13} /></button>
-        <button onClick={() => zoom(-1)} className="p-1.5 text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc] rounded transition-colors" title="Zoom out"><ZoomOut size={13} /></button>
-        <button onClick={fit} className="p-1.5 text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc] rounded transition-colors" title="Fit"><Maximize2 size={13} /></button>
-        <div className="w-px h-4 bg-[#f4f8fc] mx-0.5" />
-        <button onClick={doCenterFraud} className="p-1.5 text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc] rounded transition-colors" title="Center on fraud"><Crosshair size={13} /></button>
-        <button onClick={onRestart} className="p-1.5 text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc] rounded transition-colors" title="Restart layout"><RotateCcw size={13} /></button>
-        <button onClick={doExport} className="p-1.5 text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc] rounded transition-colors" title="Export PNG"><Download size={13} /></button>
-        <div className="w-px h-4 bg-[#f4f8fc] mx-0.5" />
-        <button onClick={() => setShowSearch(!showSearch)} className={`p-1.5 rounded transition-colors ${showSearch ? 'text-[#00579C] bg-[#00579C]/10' : 'text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc]'}`} title="Search"><Search size={13} /></button>
-        <button onClick={() => setShowVfx(!showVfx)} className={`p-1.5 rounded transition-colors ${showVfx ? 'text-[#00579C] bg-[#00579C]/10' : 'text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc]'}`} title="Graph view options"><Zap size={13} /></button>
-        <button onClick={() => setShowFilters(!showFilters)} className={`p-1.5 rounded transition-colors ${showFilters ? 'text-[#7a5a00] bg-[#f5b400]/15' : 'text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc]'}`} title="Advanced Filters"><SlidersHorizontal size={13} /></button>
-        <button onClick={() => setHeatmapMode(!heatmapMode)} className={`p-1.5 rounded transition-colors ${heatmapMode ? 'text-[#DA251C] bg-[#DA251C]/10' : 'text-[#4b5d76] hover:text-[#24364f] hover:bg-[#f4f8fc]'}`} title="Heatmap Mode"><Flame size={13} /></button>
+      <div className="flex items-center gap-1 bg-bg-surface/95 border border-border-subtle rounded-lg px-1.5 py-1 shadow-lg backdrop-blur-sm">
+        <button onClick={() => zoom(1)} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded transition-colors" title="Zoom in"><ZoomIn size={13} /></button>
+        <button onClick={() => zoom(-1)} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded transition-colors" title="Zoom out"><ZoomOut size={13} /></button>
+        <button onClick={fit} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded transition-colors" title="Fit"><Maximize2 size={13} /></button>
+        <div className="w-px h-4 bg-bg-elevated mx-0.5" />
+        <button onClick={doCenterFraud} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded transition-colors" title="Center on fraud"><Crosshair size={13} /></button>
+        <button onClick={onRestart} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded transition-colors" title="Restart layout"><RotateCcw size={13} /></button>
+        <button onClick={doExport} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded transition-colors" title="Export PNG"><Download size={13} /></button>
+        <div className="w-px h-4 bg-bg-elevated mx-0.5" />
+        <button onClick={() => setShowSearch(!showSearch)} className={`p-1.5 rounded transition-colors ${showSearch ? 'text-accent-primary bg-accent-primary/10' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'}`} title="Search"><Search size={13} /></button>
+        <button onClick={() => setShowVfx(!showVfx)} className={`p-1.5 rounded transition-colors ${showVfx ? 'text-accent-primary bg-accent-primary/10' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'}`} title="Graph view options"><Zap size={13} /></button>
+        <button onClick={() => setShowFilters(!showFilters)} className={`p-1.5 rounded transition-colors ${showFilters ? 'text-alert-medium bg-alert-medium/15' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'}`} title="Advanced Filters"><SlidersHorizontal size={13} /></button>
+        <button onClick={() => setHeatmapMode(!heatmapMode)} className={`p-1.5 rounded transition-colors ${heatmapMode ? 'text-alert-critical bg-alert-critical/10' : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'}`} title="Heatmap Mode"><Flame size={13} /></button>
       </div>
       {/* Search input with fly-to results */}
       {showSearch && (
-        <div className="bg-white/95 border border-[#d7e3f1] rounded-lg px-2 py-1.5 shadow-lg backdrop-blur-sm min-w-[220px]">
+        <div className="bg-bg-surface/95 border border-border-subtle rounded-lg px-2 py-1.5 shadow-lg backdrop-blur-sm min-w-[220px]">
           <div className="flex items-center gap-1.5 mb-1">
-            <Search size={11} className="text-[#617189]" />
+            <Search size={11} className="text-text-muted" />
             <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Node ID"
-              className="flex-1 bg-transparent border-none outline-none text-xs text-[#24364f] placeholder:text-[#617189]" autoFocus />
-            {searchTerm && <button onClick={() => setSearchTerm('')} className="text-[#617189] hover:text-[#24364f] text-xs">&times;</button>}
+              className="flex-1 bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-muted" autoFocus />
+            {searchTerm && <button onClick={() => setSearchTerm('')} className="text-text-muted hover:text-text-primary text-xs">&times;</button>}
           </div>
           {searchTerm.length >= 2 && (() => {
             const sl = searchTerm.toLowerCase()
             const matches = graphData.nodes.filter(n => n.id.toLowerCase().includes(sl)).slice(0, 8)
-            if (matches.length === 0) return <div className="text-[9px] text-[#617189] py-1">No matches found</div>
+            if (matches.length === 0) return <div className="text-[9px] text-text-muted py-1">No matches found</div>
             return (
-              <div className="border-t border-[#d7e3f1] pt-1 max-h-[180px] overflow-y-auto space-y-0.5">
+              <div className="border-t border-border-subtle pt-1 max-h-[180px] overflow-y-auto space-y-0.5">
                 {matches.map(n => {
                   const riskLevel = n.fraudRatio > 0.6 ? 'CRIT' : n.fraudRatio > 0.3 ? 'HIGH' : n.fraudRatio > 0.1 ? 'MED' : 'LOW'
                   const riskColor = RISK_COLORS[riskLevel]
                   return (
                     <button key={n.id} onClick={() => { onFlyToNode(n.id); setSearchTerm('') }}
-                      className="w-full flex items-center gap-2 px-1.5 py-1 rounded hover:bg-[#f4f8fc] transition-colors text-left group">
+                      className="w-full flex items-center gap-2 px-1.5 py-1 rounded hover:bg-bg-elevated transition-colors text-left group">
                       <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: n.color }} />
-                      <span className="text-[10px] font-mono text-[#24364f] flex-1 truncate group-hover:text-[#00579C]">{n.id}</span>
+                      <span className="text-[10px] font-mono text-text-primary flex-1 truncate group-hover:text-accent-primary">{n.id}</span>
                       <span className="text-[8px] font-semibold px-1 py-0.5 rounded" style={{ background: riskColor + '22', color: riskColor }}>{riskLevel}</span>
-                      <Crosshair size={9} className="text-[#8a98aa] group-hover:text-[#00579C] shrink-0" />
+                      <Crosshair size={9} className="text-text-muted group-hover:text-accent-primary shrink-0" />
                     </button>
                   )
                 })}
-                <div className="text-[8px] text-[#8a98aa] pt-0.5">Click to fly to node</div>
+                <div className="text-[8px] text-text-muted pt-0.5">Click to fly to node</div>
               </div>
             )
           })()}
@@ -958,8 +974,8 @@ function Graph3DControls({
       )}
       {/* VFX panel */}
       {showVfx && (
-        <div className="bg-white/95 border border-[#d7e3f1] rounded-lg px-2 py-2 shadow-lg backdrop-blur-sm min-w-[180px]">
-          <div className="text-[9px] text-[#617189] font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1"><Zap size={10} /> Graph View Options</div>
+        <div className="bg-bg-surface/95 border border-border-subtle rounded-lg px-2 py-2 shadow-lg backdrop-blur-sm min-w-[180px]">
+          <div className="text-[9px] text-text-muted font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1"><Zap size={10} /> Graph View Options</div>
           <div className="space-y-0.5">
             <VfxToggle label="Particle Flow" enabled={particlesEnabled} onChange={() => setParticlesEnabled(!particlesEnabled)} />
             <VfxToggle label="Auto Rotate" enabled={autoRotate} onChange={() => setAutoRotate(!autoRotate)} />
@@ -970,15 +986,15 @@ function Graph3DControls({
       )}
       {/* Advanced Filter panel */}
       {showFilters && (
-        <div className="bg-white/95 border border-[#d7e3f1] rounded-lg px-2 py-2 shadow-lg backdrop-blur-sm min-w-[220px] max-h-[400px] overflow-y-auto">
-          <div className="text-[9px] text-[#617189] font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1"><SlidersHorizontal size={10} /> Advanced Filters</div>
+        <div className="bg-bg-surface/95 border border-border-subtle rounded-lg px-2 py-2 shadow-lg backdrop-blur-sm min-w-[220px] max-h-[400px] overflow-y-auto">
+          <div className="text-[9px] text-text-muted font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1"><SlidersHorizontal size={10} /> Advanced Filters</div>
           {/* Channel filters */}
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] text-[#4b5d76] font-medium">Channels</span>
+              <span className="text-[9px] text-text-secondary font-medium">Channels</span>
               <div className="flex gap-1">
-                <button onClick={() => setActiveChannels(new Set([0,1,2,3,4,5,6,7,8,9]))} className="text-[8px] text-[#00579C] hover:underline">All</button>
-                <button onClick={() => setActiveChannels(new Set())} className="text-[8px] text-[#617189] hover:underline">None</button>
+                <button onClick={() => setActiveChannels(new Set([0,1,2,3,4,5,6,7,8,9]))} className="text-[8px] text-accent-primary hover:underline">All</button>
+                <button onClick={() => setActiveChannels(new Set())} className="text-[8px] text-text-muted hover:underline">None</button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
@@ -993,9 +1009,9 @@ function Graph3DControls({
                       else next.add(i)
                       setActiveChannels(next)
                     }} className="hidden" />
-                    <div className={`w-2.5 h-2.5 rounded-sm border transition-all ${on ? 'border-transparent' : 'border-[#b8c7db] bg-[#d7e3f1]'}`}
+                    <div className={`w-2.5 h-2.5 rounded-sm border transition-all ${on ? 'border-transparent' : 'border-border-default bg-border-subtle'}`}
                       style={on ? { background: CHANNEL_COLORS[i] } : {}} />
-                    <span className={`text-[9px] truncate transition-colors ${on ? 'text-[#24364f]' : 'text-[#8a98aa]'}`}>{label}</span>
+                    <span className={`text-[9px] truncate transition-colors ${on ? 'text-text-primary' : 'text-text-muted'}`}>{label}</span>
                   </label>
                 )
               })}
@@ -1004,10 +1020,10 @@ function Graph3DControls({
           {/* Fraud type filters */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] text-[#4b5d76] font-medium">Fraud Types</span>
+              <span className="text-[9px] text-text-secondary font-medium">Fraud Types</span>
               <div className="flex gap-1">
-                <button onClick={() => setActiveFraudTypes(new Set([0,1,2,3,4,5,6,7,8]))} className="text-[8px] text-[#00579C] hover:underline">All</button>
-                <button onClick={() => setActiveFraudTypes(new Set())} className="text-[8px] text-[#617189] hover:underline">None</button>
+                <button onClick={() => setActiveFraudTypes(new Set([0,1,2,3,4,5,6,7,8]))} className="text-[8px] text-accent-primary hover:underline">All</button>
+                <button onClick={() => setActiveFraudTypes(new Set())} className="text-[8px] text-text-muted hover:underline">None</button>
               </div>
             </div>
             <div className="space-y-0.5">
@@ -1023,9 +1039,9 @@ function Graph3DControls({
                       else next.add(i)
                       setActiveFraudTypes(next)
                     }} className="hidden" />
-                    <div className={`w-2.5 h-2.5 rounded-sm border transition-all ${on ? 'border-transparent' : 'border-[#b8c7db] bg-[#d7e3f1]'}`}
+                    <div className={`w-2.5 h-2.5 rounded-sm border transition-all ${on ? 'border-transparent' : 'border-border-default bg-border-subtle'}`}
                       style={on ? { background: color } : {}} />
-                    <span className={`text-[9px] truncate transition-colors ${on ? 'text-[#24364f]' : 'text-[#8a98aa]'}`}>{label}</span>
+                    <span className={`text-[9px] truncate transition-colors ${on ? 'text-text-primary' : 'text-text-muted'}`}>{label}</span>
                   </label>
                 )
               })}
@@ -1073,17 +1089,17 @@ function GraphLegend({ edges }: { edges: CytoEdge[] }) {
   return (
     <div className="absolute bottom-3 right-3 z-20">
       <button onClick={() => setCollapsed(!collapsed)}
-        className="bg-white/95 border border-[#d7e3f1] rounded-lg px-2.5 py-1.5 text-[10px] text-[#4b5d76] hover:text-[#24364f] shadow-lg backdrop-blur-sm transition-colors flex items-center gap-1">
+        className="bg-bg-surface/95 border border-border-subtle rounded-lg px-2.5 py-1.5 text-[10px] text-text-secondary hover:text-text-primary shadow-lg backdrop-blur-sm transition-colors flex items-center gap-1">
         <Network size={11} /> Legend {collapsed ? '+' : '−'}
       </button>
       {!collapsed && (
-        <div className="mt-1 bg-white/95 border border-[#d7e3f1] rounded-xl px-3 py-2.5 shadow-xl backdrop-blur-sm min-w-[200px] max-w-[240px]">
+        <div className="mt-1 bg-bg-surface/95 border border-border-subtle rounded-xl px-3 py-2.5 shadow-xl backdrop-blur-sm min-w-[200px] max-w-[240px]">
           {/* Tabs */}
-          <div className="flex gap-0.5 mb-2 border-b border-[#d7e3f1] pb-1.5">
+          <div className="flex gap-0.5 mb-2 border-b border-border-subtle pb-1.5">
             {tabs.map(t => (
               <button key={t.key} onClick={() => setSection(t.key)}
                 className={`px-2 py-0.5 rounded text-[9px] font-medium transition-colors ${
-                  section === t.key ? 'bg-[#00579C]/15 text-[#00579C]' : 'text-[#617189] hover:text-[#24364f]'
+                  section === t.key ? 'bg-accent-primary/15 text-accent-primary' : 'text-text-muted hover:text-text-primary'
                 }`}>
                 {t.label}
               </button>
@@ -1098,14 +1114,14 @@ function GraphLegend({ edges }: { edges: CytoEdge[] }) {
                 return (
                   <div key={k} className="flex items-center gap-2 text-[10px]">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: FRAUD_TYPE_COLORS[Number(k)] }} />
-                    <span className="text-[#24364f] flex-1 truncate">{label}</span>
-                    {count > 0 && <span className="text-[#617189] font-mono text-[9px]">{count}</span>}
+                    <span className="text-text-primary flex-1 truncate">{label}</span>
+                    {count > 0 && <span className="text-text-muted font-mono text-[9px]">{count}</span>}
                   </div>
                 )
               })}
-              <div className="flex items-center gap-2 text-[10px] mt-1 pt-1 border-t border-[#d7e3f1]">
+              <div className="flex items-center gap-2 text-[10px] mt-1 pt-1 border-t border-border-subtle">
                 <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: NODE_COLOR_SAFE }} />
-                <span className="text-[#4b5d76]">Clean / No Fraud</span>
+                <span className="text-text-secondary">Clean / No Fraud</span>
               </div>
             </div>
           )}
@@ -1121,8 +1137,8 @@ function GraphLegend({ edges }: { edges: CytoEdge[] }) {
                 return (
                   <div key={k} className="flex items-center gap-2 text-[10px]">
                     <div className="w-5 h-[3px] rounded-full shrink-0" style={{ background: CHANNEL_COLORS[Number(k)] }} />
-                    <span className="text-[#24364f] flex-1 truncate">{label}</span>
-                    <span className="text-[#617189] font-mono text-[9px]">{pct}%</span>
+                    <span className="text-text-primary flex-1 truncate">{label}</span>
+                    <span className="text-text-muted font-mono text-[9px]">{pct}%</span>
                   </div>
                 )
               })}
@@ -1135,11 +1151,11 @@ function GraphLegend({ edges }: { edges: CytoEdge[] }) {
               {Object.entries(STATUS_BORDER_COLORS).map(([status, color]) => (
                 <div key={status} className="flex items-center gap-2 text-[10px]">
                   <div className="w-3 h-3 rounded-full border-2 shrink-0" style={{ borderColor: color, background: status === 'frozen' ? color + '22' : 'transparent' }} />
-                  <span className="text-[#24364f] capitalize flex-1">{status}</span>
-                  <span className="text-[#8a98aa] text-[8px]">{status === 'frozen' ? 'ring + fill' : status === 'suspicious' ? 'ring' : '—'}</span>
+                  <span className="text-text-primary capitalize flex-1">{status}</span>
+                  <span className="text-text-muted text-[8px]">{status === 'frozen' ? 'ring + fill' : status === 'suspicious' ? 'ring' : '—'}</span>
                 </div>
               ))}
-              <div className="mt-1 pt-1 border-t border-[#d7e3f1] text-[9px] text-[#617189]">
+              <div className="mt-1 pt-1 border-t border-border-subtle text-[9px] text-text-muted">
                 Ring border = node status indicator
               </div>
             </div>
@@ -1148,7 +1164,7 @@ function GraphLegend({ edges }: { edges: CytoEdge[] }) {
           {/* Size Guide */}
           {section === 'size' && (
             <div className="space-y-1.5">
-              <div className="text-[9px] text-[#617189] mb-1">Node Size = Importance</div>
+              <div className="text-[9px] text-text-muted mb-1">Node Size = Importance</div>
               {[
                 { sz: 10, label: 'Frozen / Suspicious', desc: 'Highest risk' },
                 { sz: 8, label: 'High-degree Fraud', desc: '≥4 connections' },
@@ -1158,13 +1174,13 @@ function GraphLegend({ edges }: { edges: CytoEdge[] }) {
               ].map(({ sz, label, desc }) => (
                 <div key={label} className="flex items-center gap-2 text-[10px]">
                   <div className="w-5 flex items-center justify-center shrink-0">
-                    <div className="rounded-full bg-[#00579C]/50" style={{ width: sz, height: sz }} />
+                    <div className="rounded-full bg-accent-primary/50" style={{ width: sz, height: sz }} />
                   </div>
-                  <span className="text-[#24364f] flex-1">{label}</span>
-                  <span className="text-[#8a98aa] text-[8px]">{desc}</span>
+                  <span className="text-text-primary flex-1">{label}</span>
+                  <span className="text-text-muted text-[8px]">{desc}</span>
                 </div>
               ))}
-              <div className="mt-1.5 pt-1 border-t border-[#d7e3f1] text-[9px] text-[#617189]">
+              <div className="mt-1.5 pt-1 border-t border-border-subtle text-[9px] text-text-muted">
                 Link arrows = fraud direction<br />
                 Particles = transaction flow
               </div>
@@ -1215,8 +1231,8 @@ function NetworkRiskGauge({
 
   return (
     <div className="absolute bottom-3 left-3 z-20">
-      <div className="bg-white/95 border border-[#d7e3f1] rounded-xl px-3 py-2.5 shadow-xl backdrop-blur-sm w-[130px]">
-        <div className="text-[9px] text-[#617189] font-semibold uppercase tracking-wider mb-1 text-center">Network Risk</div>
+      <div className="bg-bg-surface/95 border border-border-subtle rounded-xl px-3 py-2.5 shadow-xl backdrop-blur-sm w-[130px]">
+        <div className="text-[9px] text-text-muted font-semibold uppercase tracking-wider mb-1 text-center">Network Risk</div>
         <div className="relative flex justify-center">
           <svg width="100" height="58" viewBox="0 0 100 58">
             {/* Background arc */}
@@ -1241,16 +1257,16 @@ function NetworkRiskGauge({
         </div>
         <div className="mt-1.5 grid grid-cols-3 gap-1 text-center">
           <div>
-            <div className="text-[8px] text-[#617189]">Fraud</div>
-            <div className="text-[9px] font-mono text-[#DA251C]">{(fraudRatio * 100).toFixed(0)}%</div>
+            <div className="text-[8px] text-text-muted">Fraud</div>
+            <div className="text-[9px] font-mono text-alert-critical">{(fraudRatio * 100).toFixed(0)}%</div>
           </div>
           <div>
-            <div className="text-[8px] text-[#617189]">Frozen</div>
-            <div className="text-[9px] font-mono text-[#7a5a00]">{frozen}</div>
+            <div className="text-[8px] text-text-muted">Frozen</div>
+            <div className="text-[9px] font-mono text-alert-medium">{frozen}</div>
           </div>
           <div>
-            <div className="text-[8px] text-[#617189]">Susp</div>
-            <div className="text-[9px] font-mono text-[#DA251C]">{suspicious}</div>
+            <div className="text-[8px] text-text-muted">Susp</div>
+            <div className="text-[9px] font-mono text-alert-critical">{suspicious}</div>
           </div>
         </div>
       </div>
@@ -1309,9 +1325,9 @@ function GraphStatsOverlay({
   const fmtVol = (v: number) => v >= 1e7 ? `₹${(v / 1e7).toFixed(1)}Cr` : v >= 1e5 ? `₹${(v / 1e5).toFixed(1)}L` : `₹${(v / 100).toFixed(0)}`
 
   return (
-    <div className="absolute top-3 right-3 z-20 bg-white/95 border border-[#d7e3f1] rounded-xl shadow-lg backdrop-blur-sm w-60">
-      <div className="px-3 py-2 border-b border-[#d7e3f1] flex items-center justify-between">
-        <span className="text-[10px] text-[#4b5d76] font-semibold uppercase tracking-wider flex items-center gap-1">
+    <div className="absolute top-3 right-3 z-20 bg-bg-surface/95 border border-border-subtle rounded-xl shadow-lg backdrop-blur-sm w-60">
+      <div className="px-3 py-2 border-b border-border-subtle flex items-center justify-between">
+        <span className="text-[10px] text-text-secondary font-semibold uppercase tracking-wider flex items-center gap-1">
           <TrendingUp size={10} /> Network Stats
         </span>
         <ActivitySparkline />
@@ -1319,39 +1335,39 @@ function GraphStatsOverlay({
       <div className="px-3 py-2 space-y-2 text-[10px]">
         {/* Core metrics grid */}
         <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-          <div className="flex flex-col items-center bg-[#f4f8fc] rounded px-1 py-1">
-            <span className="text-[#24364f] font-mono font-semibold">{nodeCount}</span>
-            <span className="text-[8px] text-[#617189]">Nodes</span>
+          <div className="flex flex-col items-center bg-bg-elevated rounded px-1 py-1">
+            <span className="text-text-primary font-mono font-semibold">{nodeCount}</span>
+            <span className="text-[8px] text-text-muted">Nodes</span>
           </div>
-          <div className="flex flex-col items-center bg-[#f4f8fc] rounded px-1 py-1">
-            <span className="text-[#24364f] font-mono font-semibold">{edgeCount}</span>
-            <span className="text-[8px] text-[#617189]">Edges</span>
+          <div className="flex flex-col items-center bg-bg-elevated rounded px-1 py-1">
+            <span className="text-text-primary font-mono font-semibold">{edgeCount}</span>
+            <span className="text-[8px] text-text-muted">Edges</span>
           </div>
-          <div className="flex flex-col items-center bg-[#f4f8fc] rounded px-1 py-1">
-            <span className="text-[#DA251C] font-mono font-semibold">{fraudPercent}%</span>
-            <span className="text-[8px] text-[#617189]">Fraud</span>
+          <div className="flex flex-col items-center bg-bg-elevated rounded px-1 py-1">
+            <span className="text-alert-critical font-mono font-semibold">{fraudPercent}%</span>
+            <span className="text-[8px] text-text-muted">Fraud</span>
           </div>
         </div>
 
         {/* Volume & degree */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-          <div className="flex justify-between"><span className="text-[#617189]">Volume</span><span className="text-[#0f9f6e] font-mono">{fmtVol(totalVolume)}</span></div>
-          <div className="flex justify-between"><span className="text-[#617189]">Fraud Vol</span><span className="text-[#DA251C] font-mono">{fmtVol(fraudVolume)}</span></div>
-          <div className="flex justify-between"><span className="text-[#617189]">Avg Txn</span><span className="text-[#24364f] font-mono">{fmtVol(avgTxn)}</span></div>
-          <div className="flex justify-between"><span className="text-[#617189]">Avg Deg</span><span className="text-[#00579C] font-mono">{avgDegree}</span></div>
-          <div className="flex justify-between col-span-2"><span className="text-[#617189]">Clustering</span><span className="text-[#00579C] font-mono">{clusteringCoeff.toFixed(3)}</span></div>
+          <div className="flex justify-between"><span className="text-text-muted">Volume</span><span className="text-alert-low font-mono">{fmtVol(totalVolume)}</span></div>
+          <div className="flex justify-between"><span className="text-text-muted">Fraud Vol</span><span className="text-alert-critical font-mono">{fmtVol(fraudVolume)}</span></div>
+          <div className="flex justify-between"><span className="text-text-muted">Avg Txn</span><span className="text-text-primary font-mono">{fmtVol(avgTxn)}</span></div>
+          <div className="flex justify-between"><span className="text-text-muted">Avg Deg</span><span className="text-accent-primary font-mono">{avgDegree}</span></div>
+          <div className="flex justify-between col-span-2"><span className="text-text-muted">Clustering</span><span className="text-accent-primary font-mono">{clusteringCoeff.toFixed(3)}</span></div>
         </div>
 
         {/* Risk distribution bar */}
         <div>
-          <div className="text-[9px] text-[#617189] mb-1">Risk Distribution</div>
+          <div className="text-[9px] text-text-muted mb-1">Risk Distribution</div>
           <div className="w-full h-2 rounded-full overflow-hidden flex">
-            {frozen > 0 && <div style={{ width: `${(frozen/total)*100}%`, background: '#DA251C' }} className="h-full" />}
-            {suspicious > 0 && <div style={{ width: `${(suspicious/total)*100}%`, background: '#f5b400' }} className="h-full" />}
-            {paused > 0 && <div style={{ width: `${(paused/total)*100}%`, background: '#00579C' }} className="h-full" />}
-            {normal > 0 && <div style={{ width: `${(normal/total)*100}%`, background: '#617189' }} className="h-full" />}
+            {frozen > 0 && <div style={{ width: `${(frozen/total)*100}%`, background: 'var(--color-alert-critical)' }} className="h-full" />}
+            {suspicious > 0 && <div style={{ width: `${(suspicious/total)*100}%`, background: 'var(--color-alert-medium)' }} className="h-full" />}
+            {paused > 0 && <div style={{ width: `${(paused/total)*100}%`, background: 'var(--color-accent-primary)' }} className="h-full" />}
+            {normal > 0 && <div style={{ width: `${(normal/total)*100}%`, background: 'var(--color-text-muted)' }} className="h-full" />}
           </div>
-          <div className="flex justify-between mt-0.5 text-[8px] text-[#617189]">
+          <div className="flex justify-between mt-0.5 text-[8px] text-text-muted">
             <span>{frozen} frozen</span><span>{suspicious} susp</span><span>{normal} ok</span>
           </div>
         </div>
@@ -1359,18 +1375,18 @@ function GraphStatsOverlay({
         {/* Top fraud patterns with mini bars */}
         {sortedPatterns.length > 0 && (
           <div>
-            <div className="text-[9px] text-[#617189] mb-1">Top Fraud Patterns</div>
+            <div className="text-[9px] text-text-muted mb-1">Top Fraud Patterns</div>
             <div className="space-y-1">
               {sortedPatterns.slice(0, 4).map(([fl, count]) => {
                 const pct = edgeCount > 0 ? (count / edgeCount) * 100 : 0
                 return (
                   <div key={fl} className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: FRAUD_TYPE_COLORS[fl] }} />
-                    <span className="text-[#4b5d76] flex-1 truncate text-[9px]">{FRAUD_PATTERN_LABELS[fl] ?? `T${fl}`}</span>
-                    <div className="w-12 h-1 bg-[#d7e3f1] rounded-full overflow-hidden">
+                    <span className="text-text-secondary flex-1 truncate text-[9px]">{FRAUD_PATTERN_LABELS[fl] ?? `T${fl}`}</span>
+                    <div className="w-12 h-1 bg-border-subtle rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${Math.min(pct * 3, 100)}%`, background: FRAUD_TYPE_COLORS[fl] }} />
                     </div>
-                    <span className="text-[#617189] font-mono text-[8px] w-5 text-right">{count}</span>
+                    <span className="text-text-muted font-mono text-[8px] w-5 text-right">{count}</span>
                   </div>
                 )
               })}
@@ -1381,7 +1397,7 @@ function GraphStatsOverlay({
         {/* Channel breakdown */}
         {sortedChannels.length > 0 && (
           <div>
-            <div className="text-[9px] text-[#617189] mb-1">Channel Mix</div>
+            <div className="text-[9px] text-text-muted mb-1">Channel Mix</div>
             <div className="w-full h-2 rounded-full overflow-hidden flex">
               {sortedChannels.map(([ch, count]) => (
                 <div key={ch} style={{ width: `${(count / (edgeCount || 1)) * 100}%`, background: CHANNEL_COLORS[ch] }} className="h-full" title={CHANNEL_LABELS[ch]} />
@@ -1389,7 +1405,7 @@ function GraphStatsOverlay({
             </div>
             <div className="flex flex-wrap gap-x-2 mt-0.5">
               {sortedChannels.slice(0, 3).map(([ch]) => (
-                <span key={ch} className="flex items-center gap-0.5 text-[8px] text-[#617189]">
+                <span key={ch} className="flex items-center gap-0.5 text-[8px] text-text-muted">
                   <span className="w-1 h-1 rounded-full inline-block" style={{ background: CHANNEL_COLORS[ch] }} />
                   {CHANNEL_LABELS[ch]}
                 </span>
@@ -1401,19 +1417,19 @@ function GraphStatsOverlay({
         {/* AML Indicators */}
         {(muleCount > 0 || layeringCount > 0 || structuringCount > 0) && (
           <div>
-            <div className="text-[9px] text-[#617189] mb-1 flex items-center gap-1"><Shield size={9} className="text-[#7a5a00]" /> AML Indicators</div>
+            <div className="text-[9px] text-text-muted mb-1 flex items-center gap-1"><Shield size={9} className="text-alert-medium" /> AML Indicators</div>
             <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-              <div className="flex flex-col items-center bg-[#DA251C]/10 border border-[#DA251C]/20 rounded px-1 py-1">
-                <span className="text-[#DA251C] font-mono font-semibold">{muleCount}</span>
-                <span className="text-[8px] text-[#617189]">Mules</span>
+              <div className="flex flex-col items-center bg-alert-critical/10 border border-alert-critical/20 rounded px-1 py-1">
+                <span className="text-alert-critical font-mono font-semibold">{muleCount}</span>
+                <span className="text-[8px] text-text-muted">Mules</span>
               </div>
-              <div className="flex flex-col items-center bg-[#00579C]/8 border border-[#00579C]/20 rounded px-1 py-1">
-                <span className="text-[#00579C] font-mono font-semibold">{layeringCount}</span>
-                <span className="text-[8px] text-[#617189]">Layering</span>
+              <div className="flex flex-col items-center bg-accent-primary/8 border border-accent-primary/20 rounded px-1 py-1">
+                <span className="text-accent-primary font-mono font-semibold">{layeringCount}</span>
+                <span className="text-[8px] text-text-muted">Layering</span>
               </div>
-              <div className="flex flex-col items-center bg-[#f5b400]/12 border border-[#f5b400]/30 rounded px-1 py-1">
-                <span className="text-[#7a5a00] font-mono font-semibold">{structuringCount}</span>
-                <span className="text-[8px] text-[#617189]">Structuring</span>
+              <div className="flex flex-col items-center bg-alert-medium/12 border border-alert-medium/30 rounded px-1 py-1">
+                <span className="text-alert-medium font-mono font-semibold">{structuringCount}</span>
+                <span className="text-[8px] text-text-muted">Structuring</span>
               </div>
             </div>
           </div>
@@ -1422,19 +1438,19 @@ function GraphStatsOverlay({
         {/* Key Actors */}
         {(topPR || topBC) && (
           <div>
-            <div className="text-[9px] text-[#617189] mb-1">Key Actors</div>
+            <div className="text-[9px] text-text-muted mb-1">Key Actors</div>
             {topPR && (
               <div className="flex items-center gap-1 mb-0.5">
-                <Target size={9} className="text-[#00579C]" />
-                <span className="text-[#4b5d76]">PR:</span>
-                <span className="text-[#00579C] font-mono truncate max-w-[100px]">{topPR.length > 12 ? topPR.slice(0,6)+'..'+topPR.slice(-4) : topPR}</span>
+                <Target size={9} className="text-accent-primary" />
+                <span className="text-text-secondary">PR:</span>
+                <span className="text-accent-primary font-mono truncate max-w-[100px]">{topPR.length > 12 ? topPR.slice(0,6)+'..'+topPR.slice(-4) : topPR}</span>
               </div>
             )}
             {topBC && (
               <div className="flex items-center gap-1">
-                <Zap size={9} className="text-[#00579C]" />
-                <span className="text-[#4b5d76]">BC:</span>
-                <span className="text-[#00579C] font-mono truncate max-w-[100px]">{topBC.length > 12 ? topBC.slice(0,6)+'..'+topBC.slice(-4) : topBC}</span>
+                <Zap size={9} className="text-accent-primary" />
+                <span className="text-text-secondary">BC:</span>
+                <span className="text-accent-primary font-mono truncate max-w-[100px]">{topBC.length > 12 ? topBC.slice(0,6)+'..'+topBC.slice(-4) : topBC}</span>
               </div>
             )}
           </div>
@@ -1462,7 +1478,7 @@ function ThreatRadar({ active, signalCount }: { active: boolean; signalCount: nu
           <circle cx="50" cy="50" r="3" fill="#00579C" className="animate-pulse" />
         </svg>
       </div>
-      <div className="bg-white/90 border border-[#00579C]/30 rounded px-2 py-0.5 text-[9px] text-[#00579C] font-mono backdrop-blur-sm flex items-center gap-1">
+      <div className="bg-bg-surface/90 border border-accent-primary/30 rounded px-2 py-0.5 text-[9px] text-accent-primary font-mono backdrop-blur-sm flex items-center gap-1">
         <Radio size={8} className="animate-pulse" /> SCANNING · {signalCount} signals
       </div>
     </div>
@@ -1526,6 +1542,10 @@ export default function SigmaGraph() {
   const fgRef = useRef<any>(null)
   const [version, setVersion] = useState(0)
   const setSelectedNodeUI = useUIStore(s => s.setSelectedNode)
+  const theme = useUIStore(s => s.theme)
+  // WebGL canvas clear color tracks the active theme so the 3D scene sits on
+  // the same surface as the rest of the shell instead of a fixed light box.
+  const canvasBackgroundColor = theme === 'dark' ? '#070b16' : '#f8fbff'
   const renderPauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // -- Container sizing --
@@ -1691,10 +1711,11 @@ export default function SigmaGraph() {
       opacity: 0.04,
     })
     scene.add(new THREE.Mesh(wireGeo, wireMat))
-    // Inner glow sphere — faint solid sphere for depth perception
+    // Inner glow sphere — faint solid sphere for depth perception. Tinted to
+    // the active canvas surface so it reads as depth glow, not a white globe.
     const innerGeo = new THREE.SphereGeometry(137, 32, 24)
     const innerMat = new THREE.MeshBasicMaterial({
-      color: 0xf4f8fc,
+      color: theme === 'dark' ? 0x0d1730 : 0xf4f8fc,
       transparent: true,
       opacity: 0.15,
       side: THREE.BackSide,
@@ -1735,6 +1756,9 @@ export default function SigmaGraph() {
     // Zoom to fit after simulation settles
     setTimeout(() => fgRef.current?.zoomToFit(800, 40), 2000)
     setTimeout(() => fgRef.current?.zoomToFit(800, 40), 5000)
+    // `theme` is read once at scene init (inner glow tint) and intentionally
+    // omitted — toggling theme must not tear down and rebuild the 3D scene.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graphData, dimensions])
 
   // -- Auto-rotate --
@@ -2177,8 +2201,8 @@ export default function SigmaGraph() {
     return (
       <div className="flex h-full items-center justify-center rounded-xl border border-border-subtle bg-bg-surface">
         <div className="text-center space-y-3">
-          <Network size={32} className="text-[#8a98aa] mx-auto animate-pulse" />
-          <p className="text-xs text-[#617189]">Waiting for graph topology…</p>
+          <Network size={32} className="text-text-muted mx-auto animate-pulse" />
+          <p className="text-xs text-text-muted">Waiting for graph topology…</p>
           <div className="mx-auto h-1 w-32 overflow-hidden rounded-full bg-bg-elevated">
             <div className="h-full w-1/3 animate-[shimmer_1.5s_ease-in-out_infinite] bg-gradient-to-r from-accent-primary to-alert-critical" />
           </div>
@@ -2206,7 +2230,7 @@ export default function SigmaGraph() {
           height={dimensions.height}
           rendererConfig={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
           graphData={graphData}
-          backgroundColor="#f8fbff"
+          backgroundColor={canvasBackgroundColor}
           nodeColor={getNodeColor}
           nodeVal={getNodeVal}
           nodeResolution={denseScene ? 6 : 10}
@@ -2324,12 +2348,12 @@ export default function SigmaGraph() {
           d3VelocityDecay={1}
         />
 
-      <div className="pointer-events-none absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-[#00579C]/25 bg-white/92 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[#00579C] shadow-sm backdrop-blur">
-        <Radio className="h-3.5 w-3.5 animate-pulse text-[#DA251C]" />
+      <div className="pointer-events-none absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-accent-primary/25 bg-white/92 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-accent-primary shadow-sm backdrop-blur">
+        <Radio className="h-3.5 w-3.5 animate-pulse text-alert-critical" />
         Live graph sync
-        <span className="font-mono text-[#24364f]">{graphData.nodes.length}n</span>
-        <span className="font-mono text-[#24364f]">{graphData.links.length}e</span>
-        <span className="font-mono text-[#617189]">{Math.max(0, Math.round((Date.now() - lastLiveSyncAt) / 1000))}s</span>
+        <span className="font-mono text-text-primary">{graphData.nodes.length}n</span>
+        <span className="font-mono text-text-primary">{graphData.links.length}e</span>
+        <span className="font-mono text-text-muted">{Math.max(0, Math.round((Date.now() - lastLiveSyncAt) / 1000))}s</span>
       </div>
 
       {/* Controls overlay */}

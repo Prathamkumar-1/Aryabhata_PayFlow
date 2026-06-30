@@ -5,19 +5,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useUIStore } from '@/stores/use-ui-store'
 import { ConnectionStatus } from '@/components/shared/connection-status'
-import { ROLE_POLICIES, canAccessTab, rolePolicy, type PayflowRole } from '@/lib/rbac'
+import { ROLE_POLICIES, rolePolicy, type PayflowRole } from '@/lib/rbac'
 import { useT, useLanguage } from '@/hooks/use-i18n'
 import { translateRole } from '@/lib/i18n'
-import type { UIStringKey } from '@/lib/translations'
-import { Building2, LockKeyhole, Radio, Search, ShieldCheck, UserRound } from 'lucide-react'
-
-const PRIMARY_NAV: { tab: 'pre-fraud-intel' | 'overview' | 'threat-sim' | 'investigations' | 'compliance'; labelKey: UIStringKey }[] = [
-  { tab: 'pre-fraud-intel', labelKey: 'topbar.nav.preFraudIntel' },
-  { tab: 'overview', labelKey: 'topbar.nav.fundFlow' },
-  { tab: 'threat-sim', labelKey: 'topbar.nav.eventLab' },
-  { tab: 'investigations', labelKey: 'topbar.nav.investigator' },
-  { tab: 'compliance', labelKey: 'topbar.nav.fiuReporting' },
-]
+import { Building2, Moon, Radio, Search, ShieldCheck, Sun, UserRound } from 'lucide-react'
 
 export function TopBar() {
   const t = useT()
@@ -35,9 +26,10 @@ export function TopBar() {
   }, [locale])
 
   const connected = useUIStore((s) => s.connected)
-  const setActiveTab = useUIStore((s) => s.setActiveTab)
   const currentRole = useUIStore((s) => s.currentRole)
   const setCurrentRole = useUIStore((s) => s.setCurrentRole)
+  const theme = useUIStore((s) => s.theme)
+  const toggleTheme = useUIStore((s) => s.toggleTheme)
   const activePolicy = translateRole(rolePolicy(currentRole), language)
   const skipToMain = useCallback(() => {
     const main = document.getElementById('main-content')
@@ -81,27 +73,9 @@ export function TopBar() {
           </span>
         </a>
 
-        <div className="hidden min-w-0 flex-1 items-center justify-center px-4 2xl:flex">
-          <div className="ubi-pill-menu flex items-center gap-4 px-5 py-2 text-[11px] font-bold">
-            {PRIMARY_NAV.map((item) => {
-              const allowed = canAccessTab(currentRole, item.tab)
-              const label = t(item.labelKey)
-              return (
-                <button
-                  key={item.tab}
-                  type="button"
-                  onClick={() => setActiveTab(item.tab)}
-                  disabled={!allowed}
-                  title={allowed ? label : `${activePolicy.label} cannot access ${label}`}
-                  className="inline-flex items-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-45"
-                >
-                  {!allowed && <LockKeyhole className="h-3 w-3" />}
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        {/* Primary navigation lives in the dedicated TabNav bar below; the
+            header keeps only contextual actions so the two never duplicate. */}
+        <div className="flex min-w-0 flex-1 items-center justify-end px-2" />
 
         <div className="flex shrink-0 items-center gap-3">
           <a href="/docs" className="hidden items-center gap-2 rounded-full bg-bg-elevated px-3 py-1.5 text-[10px] font-semibold text-text-secondary lg:flex">
@@ -114,6 +88,17 @@ export function TopBar() {
               {t('topbar.tagline')}
             </span>
           </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to institutional light theme' : 'Switch to command-center dark theme'}
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-bg-elevated text-text-secondary transition-colors hover:border-accent-primary hover:text-accent-primary focus:outline-none focus:ring-2 focus:ring-accent-primary/30"
+          >
+            {theme === 'dark'
+              ? <Sun className="h-3.5 w-3.5" />
+              : <Moon className="h-3.5 w-3.5" />}
+          </button>
           <label
             title={`${activePolicy.domain}: ${activePolicy.escalationScope}`}
             className="hidden items-center gap-2 rounded-full border border-border-subtle bg-bg-elevated px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-text-secondary xl:flex"

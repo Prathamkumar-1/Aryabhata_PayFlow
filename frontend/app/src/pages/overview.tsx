@@ -113,8 +113,8 @@ function StatStrip() {
     {
       label: 'Throughput',
       value: orch ? `${tps}/s` : 'n/a',
-      accent: orch && tps > 0 ? 'text-[#00579C]' : unavailableAccent,
-      iconAccent: orch && tps > 0 ? 'text-[#00579C]/70' : unavailableIcon,
+      accent: orch && tps > 0 ? 'text-accent-primary' : unavailableAccent,
+      iconAccent: orch && tps > 0 ? 'text-accent-primary/70' : unavailableIcon,
       Icon: Activity,
       pulse: Boolean(orch && tps > 0),
       available: Boolean(orch),
@@ -122,40 +122,40 @@ function StatStrip() {
     {
       label: 'ML Inferences',
       value: formatMaybeNum(orch?.ml_inferences),
-      accent: orch ? 'text-[#00579C]' : unavailableAccent,
-      iconAccent: orch ? 'text-[#00579C]/70' : unavailableIcon,
+      accent: orch ? 'text-accent-primary' : unavailableAccent,
+      iconAccent: orch ? 'text-accent-primary/70' : unavailableIcon,
       Icon: Brain,
       available: Boolean(orch),
     },
     {
       label: 'Alerts',
       value: formatMaybeNum(orch?.alerts_routed),
-      accent: orch ? 'text-[#DA251C]' : unavailableAccent,
-      iconAccent: orch ? 'text-[#DA251C]/70' : unavailableIcon,
+      accent: orch ? 'text-alert-critical' : unavailableAccent,
+      iconAccent: orch ? 'text-alert-critical/70' : unavailableIcon,
       Icon: Bell,
       available: Boolean(orch),
     },
     {
       label: 'Nodes',
       value: formatMaybeNum(graphSz?.nodes),
-      accent: graphSz ? 'text-[#00579C]' : unavailableAccent,
-      iconAccent: graphSz ? 'text-[#00579C]/70' : unavailableIcon,
+      accent: graphSz ? 'text-accent-primary' : unavailableAccent,
+      iconAccent: graphSz ? 'text-accent-primary/70' : unavailableIcon,
       Icon: CircleDot,
       available: Boolean(graphSz),
     },
     {
       label: 'Edges',
       value: formatMaybeNum(graphSz?.edges),
-      accent: graphSz ? 'text-[#00579C]' : unavailableAccent,
-      iconAccent: graphSz ? 'text-[#00579C]/70' : unavailableIcon,
+      accent: graphSz ? 'text-accent-primary' : unavailableAccent,
+      iconAccent: graphSz ? 'text-accent-primary/70' : unavailableIcon,
       Icon: GitBranch,
       available: Boolean(graphSz),
     },
     {
       label: 'Mule Nets',
       value: formatMaybeNum(graphMetrics?.mule_detections),
-      accent: graphMetrics && graphMetrics.mule_detections > 0 ? 'text-[#DA251C]' : unavailableAccent,
-      iconAccent: graphMetrics && graphMetrics.mule_detections > 0 ? 'text-[#DA251C]/70' : unavailableIcon,
+      accent: graphMetrics && graphMetrics.mule_detections > 0 ? 'text-alert-critical' : unavailableAccent,
+      iconAccent: graphMetrics && graphMetrics.mule_detections > 0 ? 'text-alert-critical/70' : unavailableIcon,
       Icon: AlertTriangle,
       pulse: Boolean(graphMetrics && graphMetrics.mule_detections > 0),
       available: Boolean(graphMetrics),
@@ -163,8 +163,8 @@ function StatStrip() {
     {
       label: 'Frozen',
       value: hasCircuitSnapshot ? fmtNum(frozenCount) : 'n/a',
-      accent: hasCircuitSnapshot && frozenCount > 0 ? 'text-[#DA251C]' : unavailableAccent,
-      iconAccent: hasCircuitSnapshot && frozenCount > 0 ? 'text-[#DA251C]/70' : unavailableIcon,
+      accent: hasCircuitSnapshot && frozenCount > 0 ? 'text-alert-critical' : unavailableAccent,
+      iconAccent: hasCircuitSnapshot && frozenCount > 0 ? 'text-alert-critical/70' : unavailableIcon,
       Icon: Shield,
       available: hasCircuitSnapshot,
     },
@@ -175,27 +175,27 @@ function StatStrip() {
           ? '0%'
           : `${((graphSummary.fraudEdges / graphSummary.edgeCount) * 100).toFixed(1)}%`
         : 'n/a',
-      accent: hasGraphSummary ? 'text-[#DA251C]' : unavailableAccent,
-      iconAccent: hasGraphSummary ? 'text-[#DA251C]/70' : unavailableIcon,
+      accent: hasGraphSummary ? 'text-alert-critical' : unavailableAccent,
+      iconAccent: hasGraphSummary ? 'text-alert-critical/70' : unavailableIcon,
       Icon: TrendingUp,
       available: hasGraphSummary,
     },
     {
       label: 'Suspicious',
       value: hasGraphSummary ? fmtNum(graphSummary.suspiciousNodes) : 'n/a',
-      accent: hasGraphSummary ? 'text-[#DA251C]' : unavailableAccent,
-      iconAccent: hasGraphSummary ? 'text-[#DA251C]/70' : unavailableIcon,
+      accent: hasGraphSummary ? 'text-alert-critical' : unavailableAccent,
+      iconAccent: hasGraphSummary ? 'text-alert-critical/70' : unavailableIcon,
       Icon: Eye,
-      available: hasGraphSummary,
+      available: Boolean(graphSummary),
     },
     {
       label: 'GPU',
       value: typeof gpuUtil === 'number' ? `${gpuUtil}%` : 'n/a',
       accent: typeof gpuUtil === 'number'
-        ? gpuUtil > 85 ? 'text-[#DA251C]' : gpuUtil > 60 ? 'text-[#DA251C]' : 'text-[#00579C]'
+        ? gpuUtil > 85 ? 'text-alert-critical' : gpuUtil > 60 ? 'text-alert-critical' : 'text-accent-primary'
         : unavailableAccent,
       iconAccent: typeof gpuUtil === 'number'
-        ? gpuUtil > 85 ? 'text-[#DA251C]/70' : gpuUtil > 60 ? 'text-[#DA251C]/70' : 'text-[#00579C]/70'
+        ? gpuUtil > 85 ? 'text-alert-critical/70' : gpuUtil > 60 ? 'text-alert-critical/70' : 'text-accent-primary/70'
         : unavailableIcon,
       Icon: Gauge,
       available: Boolean(hw),
@@ -203,8 +203,8 @@ function StatStrip() {
     {
       label: 'VRAM',
       value: hw ? `${(hw.gpu_vram_used_mb / 1024).toFixed(1)}G` : 'n/a',
-      accent: hw ? 'text-[#00579C]' : unavailableAccent,
-      iconAccent: hw ? 'text-[#00579C]/70' : unavailableIcon,
+      accent: hw ? 'text-accent-primary' : unavailableAccent,
+      iconAccent: hw ? 'text-accent-primary/70' : unavailableIcon,
       Icon: Thermometer,
       available: Boolean(hw),
     },

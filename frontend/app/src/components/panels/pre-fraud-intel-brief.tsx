@@ -5,6 +5,8 @@
 import {
   Activity,
   BrainCircuit,
+  ChevronDown,
+  ChevronRight,
   ExternalLink,
   Globe2,
   Radar,
@@ -12,7 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
-import type { ComponentType } from 'react'
+import { useState, type ComponentType } from 'react'
 import {
   useIntelPlaybooks,
   useIntelSignals,
@@ -83,6 +85,7 @@ export function PreFraudIntelBrief({
   const activeCount = context?.active_playbooks?.length ?? status?.active_playbooks ?? activePlaybooks.length
   const compact = variant === 'sidebar' || variant === 'evidence'
   const dense = variant === 'overview'
+  const [overviewExpanded, setOverviewExpanded] = useState(false)
   const busy = refresh.isPending || simulate.isPending
   const llmRuntime = resolveLLMRuntime(llmStatus, {
     loading: llmStatusLoading,
@@ -98,52 +101,85 @@ export function PreFraudIntelBrief({
 
   if (variant === 'overview') {
     return (
-      <section className={cn('ubi-page-band border-b bg-bg-surface/90 px-4 py-2.5', className)}>
+      <section className={cn('ubi-page-band border-b bg-bg-surface/90 px-4 py-2', className)}>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-accent-primary/25 bg-accent-primary/10">
+          {/* Collapsible header — click to expand/collapse the metrics + actions */}
+          <button
+            type="button"
+            onClick={() => setOverviewExpanded((v) => !v)}
+            aria-expanded={overviewExpanded}
+            className="flex min-w-0 items-center gap-2 text-left"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-accent-primary/25 bg-accent-primary/10">
               <Radar className="h-4 w-4 text-accent-primary" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
+            </span>
+            <span className="min-w-0">
+              <span className="flex items-center gap-2">
                 <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-text-primary">
                   Union Bank Pre-Fraud Intelligence Layer
                 </span>
                 <span className="rounded border border-alert-low/25 bg-alert-low/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-alert-low">
                   {activeCount} active playbooks
                 </span>
-              </div>
-              <p className="truncate text-[9px] text-text-muted">
+                {overviewExpanded
+                  ? <ChevronDown className="h-3 w-3 text-text-muted" />
+                  : <ChevronRight className="h-3 w-3 text-text-muted" />}
+              </span>
+              <span className="block truncate text-[9px] text-text-muted">
                 {topTrend?.title ?? 'Public-source fraud signals fused before graph detection and FIU evidence generation'}
-              </p>
+              </span>
+            </span>
+          </button>
+
+          {/* Collapsed summary keeps a compact status so the band stays one line */}
+          {!overviewExpanded && (
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+              <span className="truncate text-[9px] text-text-muted">
+                {sourceCount} sources · {signalCount} signals · {pct(topTrend?.trust_score)} trust · {llmRuntime.model} {llmRuntime.statusLabel}
+              </span>
+              <button
+                onClick={() => void primeIntel()}
+                disabled={busy || !access.can('intel:write')}
+                title={!access.can('intel:write') ? `${access.policy.label} cannot refresh preventive intelligence` : 'Prime preventive intelligence'}
+                className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-md border border-accent-primary/40 bg-bg-surface px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-accent-primary transition-colors hover:bg-accent-primary hover:text-white disabled:opacity-50"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Prime Intel
+              </button>
             </div>
-          </div>
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
-            <MiniMetric label="sources" value={String(sourceCount)} />
-            <MiniMetric label="signals" value={String(signalCount)} />
-            <MiniMetric label="trust" value={pct(topTrend?.trust_score)} />
-            <MiniMetric label="india fit" value={pct(topTrend?.india_relevance_score)} />
-            <MiniMetric label="bounded tuning" value={status?.rollback_available ? 'audited' : 'shadow'} />
-            <MiniMetric label="llm" value={`${llmRuntime.model} ${llmRuntime.statusLabel}`} />
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => void primeIntel()}
-              disabled={busy || !access.can('intel:write')}
-              title={!access.can('intel:write') ? `${access.policy.label} cannot refresh preventive intelligence` : 'Prime preventive intelligence'}
-              className="inline-flex items-center gap-1.5 rounded-md border border-accent-primary/40 bg-bg-surface px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-accent-primary transition-colors hover:bg-accent-primary hover:text-white disabled:opacity-50"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Prime Intel
-            </button>
-            <button
-              onClick={() => setActiveTab('pre-fraud-intel')}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border-default px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-text-secondary transition-colors hover:border-accent-primary hover:text-accent-primary"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Radar
-            </button>
-          </div>
+          )}
+
+          {/* Expanded metrics + actions */}
+          {overviewExpanded && (
+            <>
+              <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto animate-slide-up">
+                <MiniMetric label="sources" value={String(sourceCount)} />
+                <MiniMetric label="signals" value={String(signalCount)} />
+                <MiniMetric label="trust" value={pct(topTrend?.trust_score)} />
+                <MiniMetric label="india fit" value={pct(topTrend?.india_relevance_score)} />
+                <MiniMetric label="bounded tuning" value={status?.rollback_available ? 'audited' : 'shadow'} />
+                <MiniMetric label="llm" value={`${llmRuntime.model} ${llmRuntime.statusLabel}`} />
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => void primeIntel()}
+                  disabled={busy || !access.can('intel:write')}
+                  title={!access.can('intel:write') ? `${access.policy.label} cannot refresh preventive intelligence` : 'Prime preventive intelligence'}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-accent-primary/40 bg-bg-surface px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-accent-primary transition-colors hover:bg-accent-primary hover:text-white disabled:opacity-50"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Prime Intel
+                </button>
+                <button
+                  onClick={() => setActiveTab('pre-fraud-intel')}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border-default px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-text-secondary transition-colors hover:border-accent-primary hover:text-accent-primary"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Radar
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
     )

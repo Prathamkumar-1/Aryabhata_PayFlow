@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RootLayout } from '@/components/layout/root-layout'
 import { useSSE } from '@/hooks/use-sse'
 import { useDashboardHydration } from '@/hooks/use-dashboard-hydration'
+import { applyThemeToDocument } from '@/lib/theme'
 import { useUIStore, type TabId } from '@/stores/use-ui-store'
 import { LandingPage } from '@/pages/landing'
 import { PreFraudIntelPage } from '@/pages/pre-fraud-intel'
@@ -166,6 +167,14 @@ function TabLoadingFallback() {
 
 export default function App() {
   const appPath = window.location.pathname === '/app' || window.location.pathname.startsWith('/app/')
+  const theme = useUIStore((s) => s.theme)
+
+  // Reflect the active theme onto <html data-theme> + color-scheme so the CSS
+  // token blocks (light defaults / [data-theme="dark"]) flip the whole app —
+  // applies on both the landing page and the dashboard.
+  useEffect(() => {
+    applyThemeToDocument(theme)
+  }, [theme])
 
   if (!appPath) {
     return <LandingPage />

@@ -51,8 +51,8 @@ export function RuntimeBanner() {
         tone === 'ready'
           ? 'bg-linear-to-r from-bg-elevated via-bg-surface to-bg-elevated text-text-secondary'
           : tone === 'warming'
-            ? 'bg-linear-to-r from-[#fff6dd] via-bg-surface to-[#e7f2ff] text-text-primary'
-            : 'bg-linear-to-r from-[#fff6dd] via-bg-surface to-bg-elevated text-text-primary',
+            ? 'bg-linear-to-r from-alert-medium/15 via-bg-surface to-accent-primary/10 text-text-primary'
+            : 'bg-linear-to-r from-alert-medium/15 via-bg-surface to-bg-elevated text-text-primary',
       )}
     >
       {/* Status line */}
@@ -60,7 +60,7 @@ export function RuntimeBanner() {
         <StatusIcon
           className={cn(
             'w-3.5 h-3.5 shrink-0',
-            connected ? 'text-[#00579C]' : 'text-[#DA251C]',
+            connected ? 'text-accent-primary' : 'text-alert-critical',
           )}
           strokeWidth={2}
         />

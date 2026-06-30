@@ -101,14 +101,14 @@ export function LandingPage() {
   const allowedActions = ACTION_MATRIX.filter((item) => roleCan(selectedRole, item.permission)).length
 
   return (
-    <main className="h-screen overflow-y-auto bg-[#003f73] text-[#111827]">
+    <main className="h-screen overflow-y-auto bg-[#003f73] text-text-primary">
       <div className="h-1.5 bg-[#4b2a1f]" />
 
-      <div className="border-b border-[#d9e2ef] bg-[#f8fbff] text-[12px] font-semibold text-[#24364f]">
+      <div className="border-b border-border-subtle bg-bg-deep text-[12px] font-semibold text-text-primary">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-2">
           <div className="flex flex-wrap items-center gap-4">
             <a className="font-bold text-[#00579C]" href="#main-content">{t('landing.skipToMain')}</a>
-            <span className="h-4 w-px bg-[#d9e2ef]" />
+            <span className="h-4 w-px bg-border-subtle" />
             <span>{t('landing.screenReader')}</span>
             <span>A-</span>
             <span>A</span>
@@ -120,7 +120,7 @@ export function LandingPage() {
               {t('landing.portal')}
             </a>
             <a className="font-bold text-[#00579C]" href="/api/v1/rbac/roles">{t('landing.rbacApi')}</a>
-            <div className="flex items-center gap-1 rounded-full border border-[#d9e2ef] bg-white p-0.5">
+            <div className="flex items-center gap-1 rounded-full border border-border-subtle bg-white p-0.5">
               {LANGUAGES.map((lang) => (
                 <button
                   key={lang.id}
@@ -150,13 +150,13 @@ export function LandingPage() {
               <div className="text-3xl font-extrabold leading-none text-[#DA251C]">
                 Union Bank <span className="text-[#00579C]">of India</span>
               </div>
-              <div className="mt-1 text-[12px] font-bold uppercase tracking-[0.2em] text-[#617189]">
+              <div className="mt-1 text-[12px] font-bold uppercase tracking-[0.2em] text-text-muted">
                 {t('landing.govtUndertaking')}
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button className="inline-flex h-10 items-center gap-2 rounded-full border border-[#d7e3f1] bg-[#f4f8fc] px-4 text-[12px] font-bold text-[#24364f]">
+            <button className="inline-flex h-10 items-center gap-2 rounded-full border border-border-subtle bg-bg-elevated px-4 text-[12px] font-bold text-text-primary">
               <Search className="h-4 w-4 text-[#00579C]" />
               {t('landing.searchPlaceholder')}
             </button>
@@ -202,14 +202,14 @@ export function LandingPage() {
                 type="button"
                 onClick={() => setSelectedRole(item.role)}
                 className={cn(
-                  'flex w-full items-start gap-3 border-b border-[#d7e3f1] px-4 py-4 text-left transition-colors',
-                  selectedRole === item.role ? 'bg-white text-[#00579C]' : 'bg-[#f4f8fc] text-[#24364f] hover:bg-white',
+                  'flex w-full items-start gap-3 border-b border-border-subtle px-4 py-4 text-left transition-colors',
+                  selectedRole === item.role ? 'bg-white text-[#00579C]' : 'bg-bg-elevated text-text-primary hover:bg-white',
                 )}
               >
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#00579C]" />
                 <span>
                   <span className="block text-[13px] font-extrabold">{t(item.labelKey)}</span>
-                  <span className="mt-1 block text-[11px] leading-5 text-[#617189]">{t(item.bodyKey)}</span>
+                  <span className="mt-1 block text-[11px] leading-5 text-text-muted">{t(item.bodyKey)}</span>
                 </span>
               </button>
             ))}
@@ -323,7 +323,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-y border-[#d7e3f1] bg-[#f4f8fc]">
+      <section className="border-y border-border-subtle bg-bg-elevated">
         <div className="mx-auto grid max-w-7xl gap-4 px-5 py-5 lg:grid-cols-[1fr_1fr_1fr_1fr]">
           <PortalBlock icon={Wifi} title={t('landing.portal.digital.title')} value={t('landing.portal.digital.value')} />
           <PortalBlock icon={BellRing} title={t('landing.portal.efrms.title')} value={t('landing.portal.efrms.value')} />
@@ -332,7 +332,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-b border-[#d7e3f1] bg-white">
+      <section className="border-b border-border-subtle bg-white">
         <div className="mx-auto max-w-7xl px-5 py-7">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -349,8 +349,8 @@ export function LandingPage() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             {workflows.map((workflow) => (
-              <article key={workflow.id} className="border border-[#d7e3f1] bg-[#f7fbff] shadow-sm">
-                <div className="border-b border-[#d7e3f1] bg-white px-4 py-3">
+              <article key={workflow.id} className="border border-border-subtle bg-bg-elevated shadow-sm">
+                <div className="border-b border-border-subtle bg-white px-4 py-3">
                   <div className="text-[15px] font-black text-[#111827]">{workflow.title}</div>
                   <div className="mt-1 text-[11px] leading-5 text-[#4b5d76]">{workflow.trigger}</div>
                 </div>
@@ -365,7 +365,7 @@ export function LandingPage() {
                         onClick={() => setSelectedRole(stage.owner)}
                         className={cn(
                           'grid w-full gap-3 px-4 py-3 text-left sm:grid-cols-[124px_minmax(0,1fr)]',
-                          active ? 'bg-[#00579C] text-white' : 'bg-[#f7fbff] text-[#24364f] hover:bg-white',
+                          active ? 'bg-[#00579C] text-white' : 'bg-bg-elevated text-text-primary hover:bg-white',
                         )}
                       >
                         <span
@@ -412,7 +412,7 @@ export function LandingPage() {
                 key={policy.role}
                 className={cn(
                   'border bg-white shadow-[0_10px_24px_rgba(20,33,61,0.08)] transition-colors',
-                  active ? 'border-[#00579C] ring-2 ring-[#00579C]/20' : 'border-[#d7e3f1]',
+                  active ? 'border-[#00579C] ring-2 ring-[#00579C]/20' : 'border-border-subtle',
                 )}
               >
                 <button type="button" onClick={() => setSelectedRole(policy.role)} className="block w-full p-4 text-left">
@@ -421,12 +421,12 @@ export function LandingPage() {
                       <div className="text-base font-black text-[#111827]">{policy.label}</div>
                       <div className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#00579C]">{policy.domain}</div>
                     </div>
-                    {active ? <BadgeCheck className="h-5 w-5 text-[#00579C]" /> : <LockKeyhole className="h-4 w-4 text-[#617189]" />}
+                    {active ? <BadgeCheck className="h-5 w-5 text-[#00579C]" /> : <LockKeyhole className="h-4 w-4 text-text-muted" />}
                   </div>
                   <p className="mt-3 min-h-12 text-[12px] leading-6 text-[#4b5d76]">{policy.summary}</p>
-                  <div className="mt-3 border-l-4 border-[#DA251C] bg-[#f7fbff] px-3 py-2">
-                    <div className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-[#617189]">{t('landing.rolePicker.authority')}</div>
-                    <div className="mt-1 line-clamp-2 text-[11px] font-semibold leading-5 text-[#24364f]">
+                  <div className="mt-3 border-l-4 border-[#DA251C] bg-bg-elevated px-3 py-2">
+                    <div className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-text-muted">{t('landing.rolePicker.authority')}</div>
+                    <div className="mt-1 line-clamp-2 text-[11px] font-semibold leading-5 text-text-primary">
                       {policy.decisionAuthority}
                     </div>
                   </div>
@@ -436,7 +436,7 @@ export function LandingPage() {
                     <RoleStat label={t('landing.rolePicker.statPerms')} value={String(policy.permissions.length)} />
                   </div>
                 </button>
-                <div className="flex border-t border-[#d7e3f1]">
+                <div className="flex border-t border-border-subtle">
                   <button
                     type="button"
                     onClick={() => setSelectedRole(policy.role)}
@@ -473,7 +473,7 @@ function InfoMetric({ label, value }: { label: string; value: string }) {
 function HeroControl({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 border-l-4 border-[#DA251C] bg-white px-3 py-2">
-      <div className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-[#617189]">{label}</div>
+      <div className="text-[8px] font-extrabold uppercase tracking-[0.14em] text-text-muted">{label}</div>
       <div className="mt-1 truncate font-mono text-[11px] font-black text-[#00579C]" title={value}>
         {value}
       </div>
@@ -483,13 +483,13 @@ function HeroControl({ label, value }: { label: string; value: string }) {
 
 function PortalBlock({ icon: Icon, title, value }: { icon: typeof Radio; title: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 border border-[#d7e3f1] bg-white p-4 shadow-sm">
+    <div className="flex items-center gap-3 border border-border-subtle bg-white p-4 shadow-sm">
       <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-[#00579C] text-white">
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0">
         <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#DA251C]">{title}</div>
-        <div className="mt-1 truncate text-[12px] font-bold text-[#24364f]" title={value}>{value}</div>
+        <div className="mt-1 truncate text-[12px] font-bold text-text-primary" title={value}>{value}</div>
       </div>
     </div>
   )
@@ -497,8 +497,8 @@ function PortalBlock({ icon: Icon, title, value }: { icon: typeof Radio; title: 
 
 function RoleStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#f4f8fc] px-2 py-2">
-      <div className="text-[8px] font-extrabold uppercase tracking-[0.12em] text-[#617189]">{label}</div>
+    <div className="bg-bg-elevated px-2 py-2">
+      <div className="text-[8px] font-extrabold uppercase tracking-[0.12em] text-text-muted">{label}</div>
       <div className="mt-1 font-mono text-[12px] font-extrabold text-[#00579C]">{value}</div>
     </div>
   )

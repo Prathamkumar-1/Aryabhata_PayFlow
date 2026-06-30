@@ -33,7 +33,7 @@ export function RootLayout({ children }: Props) {
       <RuntimeBanner />
       <RoleContextSwitcher panel={contextPanel} onPanelChange={setContextPanel} />
       {contextPanel !== 'closed' && (
-        <div className="shrink-0 max-h-[315px] overflow-y-auto border-b border-[#c6d3e3] bg-[#edf5ff]">
+        <div className="shrink-0 max-h-[315px] overflow-y-auto border-b border-border-default bg-bg-elevated">
           {contextPanel === 'access' ? <RoleAccessBanner /> : <OperationalRealityStrip />}
         </div>
       )}

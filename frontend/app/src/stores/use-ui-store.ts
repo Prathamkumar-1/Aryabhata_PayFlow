@@ -12,6 +12,7 @@ import {
   type PayflowRole,
 } from '@/lib/rbac'
 import { getStoredLanguage, storeLanguage, type Language } from '@/lib/i18n'
+import { getStoredTheme, storeTheme, type Theme } from '@/lib/theme'
 
 export type TabId =
   | 'overview'
@@ -36,6 +37,7 @@ export const TAB_IDS: TabId[] = [
 
 const initialRole = getStoredRole()
 const initialLanguage = getStoredLanguage()
+const initialTheme = getStoredTheme()
 
 function getInitialActiveTab(): TabId {
   if (typeof window === 'undefined') return defaultTabForRole(initialRole) as TabId
@@ -48,6 +50,7 @@ interface UIState {
   activeTab: TabId
   currentRole: PayflowRole
   language: Language
+  theme: Theme
   sidebarCollapsed: boolean
   expandedDrawers: Set<string>
   connected: boolean
@@ -60,6 +63,8 @@ interface UIState {
   setActiveTab: (tab: TabId) => void
   setCurrentRole: (role: PayflowRole) => void
   setLanguage: (language: Language) => void
+  setTheme: (theme: Theme) => void
+  toggleTheme: () => void
   toggleSidebar: () => void
   toggleDrawer: (id: string) => void
   setConnected: (connected: boolean) => void
@@ -73,6 +78,7 @@ export const useUIStore = create<UIState>((set) => ({
   activeTab: getInitialActiveTab(),
   currentRole: initialRole,
   language: initialLanguage,
+  theme: initialTheme,
   sidebarCollapsed: false,
   expandedDrawers: new Set<string>(),
   connected: false,
@@ -103,6 +109,19 @@ export const useUIStore = create<UIState>((set) => ({
     set(() => {
       storeLanguage(language)
       return { language }
+    }),
+
+  setTheme: (theme) =>
+    set(() => {
+      storeTheme(theme)
+      return { theme }
+    }),
+
+  toggleTheme: () =>
+    set((state) => {
+      const theme: Theme = state.theme === 'dark' ? 'light' : 'dark'
+      storeTheme(theme)
+      return { theme }
     }),
 
   toggleSidebar: () =>
