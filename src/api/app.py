@@ -143,28 +143,39 @@ def create_app(orchestrator=None) -> FastAPI:
     async def ask_ollama():
         ollama_url = OLLAMA_CFG.base_url.rstrip("/")
         model = OLLAMA_CFG.custom_model
-        async with httpx.AsyncClient(timeout=OLLAMA_CFG.request_timeout_sec) as client:
-            response = await client.post(
-                f"{ollama_url}/api/generate",
-                json={
-                    "model": model,
-                    "prompt": "Reply with exactly one short sentence: Hello from PayFlow.",
-                    "stream": False,
-                    "think": False,
-                    "keep_alive": OLLAMA_CFG.keep_alive,
-                    "options": {
-                        "num_ctx": OLLAMA_CFG.num_ctx_status,
-                        "num_predict": min(96, OLLAMA_CFG.max_predict_tokens),
-                        "temperature": OLLAMA_CFG.intent_temperature,
-                        "top_k": OLLAMA_CFG.top_k,
-                        "top_p": OLLAMA_CFG.top_p,
-                        "repeat_penalty": OLLAMA_CFG.repeat_penalty,
-                        "num_batch": OLLAMA_CFG.num_batch,
+        try:
+            async with httpx.AsyncClient(timeout=OLLAMA_CFG.request_timeout_sec) as client:
+                response = await client.post(
+                    f"{ollama_url}/api/generate",
+                    json={
+                        "model": model,
+                        "prompt": "Reply with exactly one short sentence: Hello from PayFlow.",
+                        "stream": False,
+                        "think": False,
+                        "keep_alive": OLLAMA_CFG.keep_alive,
+                        "options": {
+                            "num_ctx": OLLAMA_CFG.num_ctx_status,
+                            "num_predict": min(96, OLLAMA_CFG.max_predict_tokens),
+                            "temperature": OLLAMA_CFG.intent_temperature,
+                            "top_k": OLLAMA_CFG.top_k,
+                            "top_p": OLLAMA_CFG.top_p,
+                            "repeat_penalty": OLLAMA_CFG.repeat_penalty,
+                            "num_batch": OLLAMA_CFG.num_batch,
+                        },
                     },
-                },
-            )
-            response.raise_for_status()
-            return response.json()
+                )
+                response.raise_for_status()
+                return response.json()
+        except Exception as exc:
+            # Ollama is optional. When it is unreachable, return a structured
+            # response instead of HTTP 500 so the probe degrades gracefully.
+            logger.debug("Ollama probe (/ask) unreachable at %s: %s", ollama_url, exc)
+            return {
+                "model": model,
+                "reachable": False,
+                "response": "",
+                "error": f"Ollama runtime unavailable at {ollama_url}",
+            }
 
     @app.get("/api/v1/llm/status")
     async def llm_status(request: Request):
